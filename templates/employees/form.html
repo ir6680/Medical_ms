@@ -1,0 +1,67 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}{{ mode }} Employee | Medical Store Management{% endblock %}
+{% block page_heading %}{{ mode }} Employee{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div>
+        <p class="section-kicker">Employee Management</p>
+        <h1>{{ mode }} Employee</h1>
+        <p>Maintain staff identity, contact information, role, and account status.</p>
+    </div>
+    <a href="{{ url_for('employees.index') }}" class="btn btn-outline-primary"><i class="bi bi-arrow-left me-2"></i>Back</a>
+</section>
+
+<section class="panel-card form-panel">
+    <form method="post" class="row g-3" novalidate>
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+        <div class="col-md-6">
+            <label class="form-label" for="full_name">Full Name</label>
+            <input class="form-control" id="full_name" name="full_name" value="{{ employee.full_name or '' }}" required>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="username">Username</label>
+            <input class="form-control" id="username" name="username" value="{{ employee.username or '' }}" required>
+        </div>
+        {% if mode == 'Add' %}
+            <div class="col-md-6">
+                <label class="form-label" for="password">Password</label>
+                <input type="password" class="form-control" id="password" name="password" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="confirm_password">Confirm Password</label>
+                <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+            </div>
+        {% endif %}
+        <div class="col-md-6">
+            <label class="form-label" for="phone">Phone</label>
+            <input class="form-control" id="phone" name="phone" value="{{ employee.phone or '' }}">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="email">Email</label>
+            <input type="email" class="form-control" id="email" name="email" value="{{ employee.email or '' }}">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="role">Role</label>
+            <select class="form-select" id="role" name="role" required>
+                {% for role in ['Admin', 'Employee'] %}
+                    <option value="{{ role }}" {% if (employee.role or 'Employee') == role %}selected{% endif %}>{{ role }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="status">Status</label>
+            <select class="form-select" id="status" name="status">
+                <option value="active" {% if employee.is_active_account is not defined or employee.is_active_account %}selected{% endif %}>Active</option>
+                <option value="inactive" {% if employee.is_active_account is defined and not employee.is_active_account %}selected{% endif %}>Inactive</option>
+            </select>
+        </div>
+        <div class="col-12 d-flex justify-content-end gap-2">
+            <a href="{{ url_for('employees.index') }}" class="btn btn-light">Cancel</a>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check2-circle me-2"></i>Save Employee</button>
+        </div>
+    </form>
+</section>
+{% endblock %}

@@ -1,0 +1,26 @@
+<table>
+    <thead>
+        <tr>
+            <th>Medicine ID</th>
+            <th>Medicine Name</th>
+            <th>Generic Name</th>
+            <th>Company</th>
+            <th>Category</th>
+            <th>Barcode</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for medicine in medicines %}
+            <tr>
+                <td>{{ medicine.medicine_id }}</td>
+                <td>{{ medicine.medicine_name }}</td>
+                <td>{{ medicine.generic_name }}</td>
+                <td>{{ medicine.company }}</td>
+                <td>{{ medicine.category }}</td>
+                <td>{{ medicine.barcode }}</td>
+                <td>{{ medicine.status }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

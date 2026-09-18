@@ -1,0 +1,66 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}Expiring Medicines | Medical Store Management{% endblock %}
+{% block page_heading %}Expiry Management{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div>
+        <p class="section-kicker">Expiry Control</p>
+        <h1>Expiring Medicines</h1>
+        <p>Filter upcoming expiries and separate already expired stock.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{{ url_for('inventory.expiring', days=30) }}" class="btn {% if days == '30' %}btn-primary{% else %}btn-outline-primary{% endif %}">30 days</a>
+        <a href="{{ url_for('inventory.expiring', days=60) }}" class="btn {% if days == '60' %}btn-primary{% else %}btn-outline-primary{% endif %}">60 days</a>
+        <a href="{{ url_for('inventory.expiring', days=90) }}" class="btn {% if days == '90' %}btn-primary{% else %}btn-outline-primary{% endif %}">90 days</a>
+    </div>
+</section>
+
+<section class="panel-card mb-3">
+    <div class="panel-header"><div><h2>Expiring in {{ days }} Days</h2><p>Stock batches requiring attention</p></div></div>
+    <div class="table-responsive">
+        <table id="expiringTable" class="table align-middle admin-table data-table">
+            <thead><tr><th>Medicine</th><th>Generic</th><th>Batch</th><th>Quantity</th><th>Expiry Date</th></tr></thead>
+            <tbody>
+                {% for item in expiring_rows %}
+                    <tr>
+                        <td><a class="table-link" href="{{ url_for('medicines.detail', medicine_id=item.medicine_id) }}">{{ item.medicine_name }}</a></td>
+                        <td>{{ item.generic_name }}</td>
+                        <td>{{ item.batch_no }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>{{ item.expiry_date.strftime('%d %b %Y') if item.expiry_date else '-' }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="panel-card">
+    <div class="panel-header"><div><h2>Expired Medicines</h2><p>Remove or quarantine expired stock</p></div></div>
+    <div class="table-responsive">
+        <table id="expiredTable" class="table align-middle admin-table data-table">
+            <thead><tr><th>Medicine</th><th>Generic</th><th>Batch</th><th>Quantity</th><th>Expired On</th></tr></thead>
+            <tbody>
+                {% for item in expired_rows %}
+                    <tr>
+                        <td><a class="table-link" href="{{ url_for('medicines.detail', medicine_id=item.medicine_id) }}">{{ item.medicine_name }}</a></td>
+                        <td>{{ item.generic_name }}</td>
+                        <td>{{ item.batch_no }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td><span class="badge text-bg-danger">{{ item.expiry_date.strftime('%d %b %Y') if item.expiry_date else '-' }}</span></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
+
+{% block app_scripts %}
+<link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.bootstrap5.css">
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/2.0.8/js/dataTables.js"></script>
+<script src="https://cdn.datatables.net/2.0.8/js/dataTables.bootstrap5.js"></script>
+{% endblock %}

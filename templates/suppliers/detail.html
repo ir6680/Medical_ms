@@ -1,0 +1,55 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}{{ supplier.supplier_name }} | Medical Store Management{% endblock %}
+{% block page_heading %}Supplier Details{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div>
+        <p class="section-kicker">Supplier Details</p>
+        <h1>{{ supplier.supplier_name }}</h1>
+        <p>{{ supplier.phone or 'No phone' }} · {{ supplier.email or 'No email' }}</p>
+    </div>
+    <div class="page-actions">
+        <a href="{{ url_for('suppliers.edit', supplier_id=supplier.supplier_id) }}" class="btn btn-outline-primary"><i class="bi bi-pencil me-2"></i>Edit</a>
+        <a href="{{ url_for('purchases.create') }}?supplier_id={{ supplier.supplier_id }}" class="btn btn-primary"><i class="bi bi-bag-plus me-2"></i>New Purchase</a>
+    </div>
+</section>
+
+<section class="stats-grid inventory-stats">
+    <article class="stat-card accent-primary"><div class="stat-icon"><i class="bi bi-truck"></i></div><div><span>Supplier ID</span><strong>#{{ supplier.supplier_id }}</strong><small>Active supplier</small></div></article>
+    <article class="stat-card accent-info"><div class="stat-icon"><i class="bi bi-receipt"></i></div><div><span>Total Purchases</span><strong>{{ totals.total_purchases }}</strong><small>Invoices recorded</small></div></article>
+    <article class="stat-card accent-teal"><div class="stat-icon"><i class="bi bi-cash-coin"></i></div><div><span>Total Purchase Amount</span><strong>Rs {{ "{:,.2f}".format(totals.total_amount or 0) }}</strong><small>Lifetime spend</small></div></article>
+</section>
+
+<section class="detail-grid">
+    <article class="panel-card">
+        <div class="panel-header"><div><h2>Supplier Information</h2><p>Contact and address</p></div></div>
+        <dl class="info-list">
+            <div><dt>Name</dt><dd>{{ supplier.supplier_name }}</dd></div>
+            <div><dt>Phone</dt><dd>{{ supplier.phone or '-' }}</dd></div>
+            <div><dt>Email</dt><dd>{{ supplier.email or '-' }}</dd></div>
+            <div><dt>Address</dt><dd>{{ supplier.address or '-' }}</dd></div>
+        </dl>
+    </article>
+    <article class="panel-card">
+        <div class="panel-header"><div><h2>Purchase History</h2><p>Invoices from this supplier</p></div></div>
+        <div class="table-responsive">
+            <table class="table align-middle admin-table">
+                <thead><tr><th>Invoice</th><th>Date</th><th class="text-end">Amount</th></tr></thead>
+                <tbody>
+                    {% for purchase in purchases %}
+                        <tr>
+                            <td><a class="table-link" href="{{ url_for('purchases.detail', purchase_id=purchase.purchase_id) }}">{{ purchase.invoice_no or ('#' ~ purchase.purchase_id) }}</a></td>
+                            <td>{{ purchase.purchase_date.strftime('%d %b %Y') if purchase.purchase_date else '-' }}</td>
+                            <td class="text-end">Rs {{ "{:,.2f}".format(purchase.total_amount or 0) }}</td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="3" class="empty-state">No purchases recorded for this supplier.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </article>
+</section>
+{% endblock %}

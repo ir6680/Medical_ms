@@ -1,0 +1,60 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}{{ purchase.invoice_no or ('Purchase #' ~ purchase.purchase_id) }} | Medical Store Management{% endblock %}
+{% block page_heading %}Purchase Details{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div>
+        <p class="section-kicker">Purchase Invoice</p>
+        <h1>{{ purchase.invoice_no or ('Purchase #' ~ purchase.purchase_id) }}</h1>
+        <p>{{ purchase.supplier_name }} · {{ purchase.purchase_date.strftime('%d %b %Y, %I:%M %p') if purchase.purchase_date else '-' }}</p>
+    </div>
+    <div class="page-actions">
+        <a href="{{ url_for('purchases.pdf', purchase_id=purchase.purchase_id) }}" class="btn btn-outline-primary"><i class="bi bi-file-earmark-pdf me-2"></i>PDF</a>
+        <a href="{{ url_for('purchases.create') }}" class="btn btn-primary"><i class="bi bi-plus-circle me-2"></i>New Purchase</a>
+    </div>
+</section>
+
+<section class="detail-grid">
+    <article class="panel-card">
+        <div class="panel-header"><div><h2>Invoice Information</h2><p>Supplier and totals</p></div></div>
+        <dl class="info-list">
+            <div><dt>Invoice</dt><dd>{{ purchase.invoice_no or '-' }}</dd></div>
+            <div><dt>Supplier</dt><dd>{{ purchase.supplier_name }}</dd></div>
+            <div><dt>Date</dt><dd>{{ purchase.purchase_date.strftime('%d %b %Y, %I:%M %p') if purchase.purchase_date else '-' }}</dd></div>
+            <div><dt>Total</dt><dd>Rs {{ "{:,.2f}".format(purchase.total_amount or 0) }}</dd></div>
+        </dl>
+    </article>
+    <article class="panel-card">
+        <div class="panel-header"><div><h2>Supplier</h2><p>Contact information</p></div></div>
+        <dl class="info-list">
+            <div><dt>Phone</dt><dd>{{ purchase.phone or '-' }}</dd></div>
+            <div><dt>Email</dt><dd>{{ purchase.email or '-' }}</dd></div>
+            <div><dt>Address</dt><dd>{{ purchase.address or '-' }}</dd></div>
+        </dl>
+    </article>
+</section>
+
+<section class="panel-card">
+    <div class="panel-header"><div><h2>Purchased Medicines</h2><p>Batch, price, and quantity breakdown</p></div></div>
+    <div class="table-responsive">
+        <table class="table align-middle admin-table">
+            <thead><tr><th>Medicine</th><th>Batch</th><th>Qty</th><th>Purchase Price</th><th>Sale Price</th><th>Expiry</th><th class="text-end">Subtotal</th></tr></thead>
+            <tbody>
+                {% for item in items %}
+                    <tr>
+                        <td>{{ item.medicine_name }}<small class="d-block text-muted">{{ item.generic_name }}</small></td>
+                        <td>{{ item.batch_no }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>Rs {{ "{:,.2f}".format(item.purchase_price or 0) }}</td>
+                        <td>Rs {{ "{:,.2f}".format(item.sale_price or 0) }}</td>
+                        <td>{{ item.expiry_date.strftime('%d %b %Y') if item.expiry_date else '-' }}</td>
+                        <td class="text-end">Rs {{ "{:,.2f}".format((item.purchase_price or 0) * (item.quantity or 0)) }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

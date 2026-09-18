@@ -1,0 +1,126 @@
+{% extends "layouts/base.html" %}
+
+{% block body %}
+<div class="dashboard-shell">
+    <aside class="sidebar offcanvas-lg offcanvas-start" tabindex="-1" id="sidebarNav" aria-labelledby="sidebarNavLabel">
+        <div class="sidebar-header">
+            <a class="sidebar-brand" href="{{ url_for('dashboard.dashboard') }}" id="sidebarNavLabel">
+                <span class="brand-icon"><i class="bi bi-capsule-pill"></i></span>
+                <span>MedStore</span>
+            </a>
+            <button type="button" class="btn-close d-lg-none" data-bs-dismiss="offcanvas" data-bs-target="#sidebarNav" aria-label="Close"></button>
+        </div>
+
+        <nav class="sidebar-nav">
+            {% set nav_items = [
+                ('dashboard.dashboard', 'bi-speedometer2', 'Dashboard', current_user.is_admin),
+                ('pos.index', 'bi-calculator', 'POS', true),
+                ('medicines.index', 'bi-capsule-pill', 'Medicines', current_user.is_admin),
+                ('inventory.index', 'bi-box-seam', 'Inventory', current_user.is_admin),
+                ('suppliers.index', 'bi-truck', 'Suppliers', current_user.is_admin),
+                ('purchases.index', 'bi-bag-plus', 'Purchases', current_user.is_admin),
+                ('sales.index', 'bi-receipt', 'Sales', current_user.is_admin),
+                ('returns.sales', 'bi-arrow-counterclockwise', 'Returns', current_user.is_admin),
+                ('stock_movements.index', 'bi-list-columns-reverse', 'Stock Ledger', current_user.is_admin),
+                ('expenses.index', 'bi-wallet2', 'Expenses', current_user.is_admin),
+                ('cash_register.index', 'bi-cash-stack', 'Cash Register', current_user.is_admin),
+                ('employees.index', 'bi-people', 'Employees', current_user.is_admin),
+                ('reports.index', 'bi-graph-up-arrow', 'Reports', current_user.is_admin),
+                ('settings.index', 'bi-gear', 'Settings', current_user.is_admin)
+            ] %}
+            {% for endpoint, icon, label, allowed in nav_items %}
+                {% if allowed %}
+                    <a class="sidebar-link {% if request.endpoint == endpoint or (endpoint.startswith('pos.') and request.endpoint.startswith('pos.')) or (endpoint.startswith('medicines.') and request.endpoint.startswith('medicines.')) or (endpoint.startswith('inventory.') and request.endpoint.startswith('inventory.')) or (endpoint.startswith('suppliers.') and request.endpoint.startswith('suppliers.')) or (endpoint.startswith('purchases.') and request.endpoint.startswith('purchases.')) or (endpoint.startswith('sales.') and request.endpoint.startswith('sales.')) or (endpoint.startswith('returns.') and request.endpoint.startswith('returns.')) or (endpoint.startswith('stock_movements.') and request.endpoint.startswith('stock_movements.')) or (endpoint.startswith('expenses.') and request.endpoint.startswith('expenses.')) or (endpoint.startswith('cash_register.') and request.endpoint.startswith('cash_register.')) or (endpoint.startswith('employees.') and request.endpoint.startswith('employees.')) or (endpoint.startswith('reports.') and request.endpoint.startswith('reports.')) or (endpoint.startswith('settings.') and request.endpoint.startswith('settings.')) %}active{% endif %}" href="{{ url_for(endpoint) }}">
+                        <i class="bi {{ icon }}"></i>
+                        <span>{{ label }}</span>
+                    </a>
+                {% endif %}
+            {% endfor %}
+        </nav>
+
+        <form method="post" action="{{ url_for('auth.logout') }}" class="sidebar-logout">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="sidebar-link logout-link">
+                <i class="bi bi-box-arrow-left"></i>
+                <span>Logout</span>
+            </button>
+        </form>
+    </aside>
+
+    <div class="main-panel">
+        <header class="topbar">
+            <button class="btn icon-btn d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarNav" aria-controls="sidebarNav" aria-label="Open navigation">
+                <i class="bi bi-list"></i>
+            </button>
+
+            <div class="topbar-title">
+                <span class="text-muted">Pharmacy Operations</span>
+                <strong>{% block page_heading %}Dashboard{% endblock %}</strong>
+            </div>
+
+            <div class="global-search">
+                <i class="bi bi-search"></i>
+                <input type="search" id="globalMedicineSearch" class="form-control" placeholder="Search medicines, generic, barcode" autocomplete="off" data-search-url="{{ url_for('dashboard.medicine_search') }}">
+                <div id="globalSearchResults" class="global-search-results"></div>
+            </div>
+
+            <div class="topbar-actions">
+                <div class="dropdown">
+                    <button class="btn icon-btn position-relative" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Notifications">
+                        <i class="bi bi-bell"></i>
+                        <span class="notification-dot"></span>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end notification-menu">
+                        <h6 class="dropdown-header">Notifications</h6>
+                        <a class="dropdown-item" href="{{ url_for('inventory.low_stock') }}"><i class="bi bi-exclamation-triangle me-2 text-warning"></i>Stock warnings</a>
+                        <a class="dropdown-item" href="{{ url_for('inventory.expiring') }}"><i class="bi bi-calendar2-x me-2 text-danger"></i>Expiry management</a>
+                    </div>
+                </div>
+
+                <div class="dropdown">
+                    <button class="btn profile-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <span class="avatar">{{ current_user.username[:1]|upper }}</span>
+                        <span class="profile-copy d-none d-sm-flex">
+                            <strong>{{ current_user.username }}</strong>
+                            <small>{{ current_user.display_role }}</small>
+                        </span>
+                        <i class="bi bi-chevron-down"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><span class="dropdown-item-text small text-muted">{{ current_user.display_role }} account</span></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form method="post" action="{{ url_for('auth.logout') }}">
+                                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                                <button class="dropdown-item" type="submit"><i class="bi bi-box-arrow-left me-2"></i>Logout</button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </header>
+
+        <main class="content-area">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-stack dashboard-flashes">
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+    {% block app_scripts %}{% endblock %}
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

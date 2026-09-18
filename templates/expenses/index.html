@@ -1,0 +1,53 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}Expenses | Medical Store Management{% endblock %}
+{% block page_heading %}Expenses{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div><p class="section-kicker">Cash Management</p><h1>Daily Expenses</h1><p>Track store expenses with audit history and soft delete.</p></div>
+    <div class="page-actions"><a href="{{ url_for('cash_register.index') }}" class="btn btn-outline-primary"><i class="bi bi-cash-stack me-2"></i>Cash Register</a></div>
+</section>
+
+<section class="stats-grid inventory-stats">
+    <article class="stat-card accent-danger"><div class="stat-icon"><i class="bi bi-wallet2"></i></div><div><span>Total Expenses</span><strong>Rs {{ "{:,.2f}".format(total or 0) }}</strong><small>Active records</small></div></article>
+</section>
+
+<section class="panel-card form-panel">
+    <form method="post" class="row g-3">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+        <div class="col-md-3"><label class="form-label" for="expense_date">Date</label><input type="date" class="form-control" id="expense_date" name="expense_date" value="{{ today }}" required></div>
+        <div class="col-md-3"><label class="form-label" for="category">Category</label><select class="form-select" id="category" name="category">{% for category in categories %}<option value="{{ category }}">{{ category }}</option>{% endfor %}</select></div>
+        <div class="col-md-3"><label class="form-label" for="amount">Amount</label><input type="number" min="0.01" step="0.01" class="form-control" id="amount" name="amount" required></div>
+        <div class="col-md-3 d-flex align-items-end"><button class="btn btn-primary w-100" type="submit"><i class="bi bi-plus-circle me-2"></i>Add Expense</button></div>
+        <div class="col-12"><label class="form-label" for="description">Description</label><textarea class="form-control" id="description" name="description" rows="2"></textarea></div>
+    </form>
+</section>
+
+<section class="panel-card mt-3">
+    <div class="table-responsive">
+        <table class="table align-middle admin-table data-table">
+            <thead><tr><th>Date</th><th>Category</th><th>Description</th><th>User</th><th class="text-end">Amount</th><th class="text-end">Actions</th></tr></thead>
+            <tbody>
+                {% for row in rows %}
+                    <tr>
+                        <td>{{ row.expense_date.strftime('%d %b %Y') if row.expense_date else '-' }}</td>
+                        <td>{{ row.category }}</td>
+                        <td>{{ row.description or '-' }}</td>
+                        <td>{{ row.username }}</td>
+                        <td class="text-end">Rs {{ "{:,.2f}".format(row.amount or 0) }}</td>
+                        <td class="text-end"><form method="post" action="{{ url_for('expenses.delete', expense_id=row.expense_id) }}"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><button class="btn btn-sm icon-btn table-icon danger" type="submit" title="Delete"><i class="bi bi-trash"></i></button></form></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
+
+{% block app_scripts %}
+<link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.bootstrap5.css">
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/2.0.8/js/dataTables.js"></script>
+<script src="https://cdn.datatables.net/2.0.8/js/dataTables.bootstrap5.js"></script>
+{% endblock %}

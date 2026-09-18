@@ -1,0 +1,69 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}Purchase Returns | Medical Store Management{% endblock %}
+{% block page_heading %}Purchase Returns{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div><p class="section-kicker">Return Management</p><h1>Supplier Purchase Return</h1><p>Return damaged, expired, wrong, or recalled stock to suppliers.</p></div>
+    <div class="page-actions"><a href="{{ url_for('returns.sales') }}" class="btn btn-outline-primary"><i class="bi bi-receipt me-2"></i>Sale Returns</a></div>
+</section>
+
+<section class="panel-card form-panel">
+    <form method="get" class="row g-2">
+        <div class="col-md-9">
+            <select class="form-select" name="purchase_id">
+                <option value="">Select purchase invoice</option>
+                {% for row in purchases %}
+                    <option value="{{ row.purchase_id }}" {% if purchase_id == (row.purchase_id|string) %}selected{% endif %}>{{ row.invoice_no or ('#' ~ row.purchase_id) }} - {{ row.purchase_date.strftime('%d %b %Y') if row.purchase_date else '-' }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3"><button class="btn btn-primary w-100" type="submit">Load Invoice</button></div>
+    </form>
+</section>
+
+{% if purchase %}
+<section class="panel-card mt-3">
+    <div class="panel-header"><div><h2>{{ purchase.invoice_no or ('#' ~ purchase.purchase_id) }}</h2><p>{{ purchase.supplier_name }} - {{ purchase.purchase_date.strftime('%d %b %Y') if purchase.purchase_date else '-' }}</p></div></div>
+    <div class="table-responsive">
+        <table class="table align-middle admin-table">
+            <thead><tr><th>Medicine</th><th>Batch</th><th>Purchased</th><th>Returned</th><th>Stock</th><th>Return Qty</th><th>Reason</th><th class="text-end">Action</th></tr></thead>
+            <tbody>
+                {% for item in items %}
+                    {% set max_qty = [item.quantity - item.returned_qty, item.stock_qty]|min %}
+                    <tr>
+                        <td>{{ item.medicine_name }}<small class="d-block text-muted">{{ item.generic_name }}</small></td>
+                        <td>{{ item.batch_no }}</td><td>{{ item.quantity }}</td><td>{{ item.returned_qty }}</td><td>{{ item.stock_qty }}</td>
+                        <form method="post">
+                            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="purchase_id" value="{{ purchase.purchase_id }}">
+                            <input type="hidden" name="purchase_detail_id" value="{{ item.detail_id }}">
+                            <td><input type="number" class="form-control" name="quantity" min="1" max="{{ max_qty }}" {% if max_qty <= 0 %}disabled{% endif %}></td>
+                            <td><select class="form-select" name="reason" {% if max_qty <= 0 %}disabled{% endif %}>{% for reason in reasons %}<option value="{{ reason }}">{{ reason }}</option>{% endfor %}</select></td>
+                            <td class="text-end"><button class="btn btn-sm btn-primary" type="submit" {% if max_qty <= 0 %}disabled{% endif %}>Return</button></td>
+                        </form>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endif %}
+
+<section class="panel-card mt-3">
+    <div class="panel-header"><div><h2>Recent Purchase Returns</h2><p>Latest supplier return records</p></div></div>
+    <div class="table-responsive">
+        <table class="table align-middle admin-table">
+            <thead><tr><th>Return ID</th><th>Purchase</th><th>Date</th><th>User</th><th class="text-end">Amount</th></tr></thead>
+            <tbody>
+                {% for row in returns %}
+                    <tr><td>#{{ row.return_id }}</td><td>#{{ row.purchase_id }}</td><td>{{ row.return_date.strftime('%d %b %Y, %I:%M %p') if row.return_date else '-' }}</td><td>{{ row.username }}</td><td class="text-end">Rs {{ "{:,.2f}".format(row.total_amount or 0) }}</td></tr>
+                {% else %}
+                    <tr><td colspan="5" class="empty-state">No purchase returns recorded.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

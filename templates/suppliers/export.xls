@@ -1,0 +1,16 @@
+<table>
+    <thead><tr><th>Supplier ID</th><th>Supplier Name</th><th>Phone</th><th>Email</th><th>Address</th><th>Total Purchases</th><th>Last Purchase Date</th></tr></thead>
+    <tbody>
+        {% for supplier in suppliers %}
+            <tr>
+                <td>{{ supplier.supplier_id }}</td>
+                <td>{{ supplier.supplier_name }}</td>
+                <td>{{ supplier.phone }}</td>
+                <td>{{ supplier.email }}</td>
+                <td>{{ supplier.address }}</td>
+                <td>{{ supplier.total_purchases }}</td>
+                <td>{{ supplier.last_purchase_date }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

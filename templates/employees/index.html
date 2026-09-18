@@ -1,0 +1,67 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}Employees | Medical Store Management{% endblock %}
+{% block page_heading %}Employees{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div>
+        <p class="section-kicker">Employee Management</p>
+        <h1>Employees</h1>
+        <p>Manage staff accounts, roles, status, and password resets.</p>
+    </div>
+    <a href="{{ url_for('employees.add') }}" class="btn btn-primary"><i class="bi bi-plus-circle me-2"></i>Add Employee</a>
+</section>
+
+<section class="panel-card">
+    <div class="table-responsive">
+        <table class="table align-middle admin-table data-table">
+            <thead>
+                <tr>
+                    <th>Employee ID</th>
+                    <th>Username</th>
+                    <th>Full Name</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Last Login</th>
+                    <th>Created Date</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for employee in employees %}
+                    <tr>
+                        <td>#{{ employee.user_id }}</td>
+                        <td><a class="table-link" href="{{ url_for('employees.detail', employee_id=employee.user_id) }}">{{ employee.username }}</a></td>
+                        <td>{{ employee.full_name or '-' }}</td>
+                        <td>{{ employee.display_role }}</td>
+                        <td><span class="badge text-bg-{{ 'success' if employee.is_active else 'secondary' }}">{{ 'Active' if employee.is_active else 'Inactive' }}</span></td>
+                        <td>{{ employee.last_login.strftime('%d %b %Y, %I:%M %p') if employee.last_login else '-' }}</td>
+                        <td>{{ employee.created_at.strftime('%d %b %Y') if employee.created_at else '-' }}</td>
+                        <td class="text-end">
+                            <div class="action-buttons">
+                                <a class="btn btn-sm icon-btn table-icon" href="{{ url_for('employees.detail', employee_id=employee.user_id) }}" title="View"><i class="bi bi-eye"></i></a>
+                                <a class="btn btn-sm icon-btn table-icon" href="{{ url_for('employees.edit', employee_id=employee.user_id) }}" title="Edit"><i class="bi bi-pencil"></i></a>
+                                <a class="btn btn-sm icon-btn table-icon" href="{{ url_for('employees.reset_password', employee_id=employee.user_id) }}" title="Reset Password"><i class="bi bi-key"></i></a>
+                                <form method="post" action="{{ url_for('employees.toggle', employee_id=employee.user_id) }}" class="d-inline">
+                                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                                    <button class="btn btn-sm icon-btn table-icon {{ 'danger' if employee.is_active else '' }}" type="submit" title="{{ 'Deactivate' if employee.is_active else 'Activate' }}">
+                                        <i class="bi {{ 'bi-person-slash' if employee.is_active else 'bi-person-check' }}"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
+
+{% block app_scripts %}
+<link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.bootstrap5.css">
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/2.0.8/js/dataTables.js"></script>
+<script src="https://cdn.datatables.net/2.0.8/js/dataTables.bootstrap5.js"></script>
+{% endblock %}

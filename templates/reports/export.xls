@@ -1,0 +1,13 @@
+<!doctype html>
+<html>
+<body>
+<table border="1">
+    <thead><tr><th colspan="5">{{ title }}</th></tr><tr><th>ID</th><th>Date</th><th>Name</th><th>Count/Qty</th><th>Amount</th></tr></thead>
+    <tbody>
+        {% for row in rows %}
+            <tr><td>{{ row.id }}</td><td>{{ row.report_date }}</td><td>{{ row.party }}</td><td>{{ row.count_value }}</td><td>{{ row.amount }}</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+</body>
+</html>

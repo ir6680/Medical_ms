@@ -1,0 +1,86 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}Medicines | Medical Store Management{% endblock %}
+{% block page_heading %}Medicines{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div>
+        <p class="section-kicker">Catalog</p>
+        <h1>Medicines</h1>
+        <p>Manage medicine records, categories, companies, and barcode identities.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{{ url_for('medicines.export_csv') }}" class="btn btn-outline-primary"><i class="bi bi-filetype-csv me-2"></i>CSV</a>
+        <a href="{{ url_for('medicines.export_excel') }}" class="btn btn-outline-primary"><i class="bi bi-file-earmark-spreadsheet me-2"></i>Excel</a>
+        <a href="{{ url_for('medicines.add') }}" class="btn btn-primary"><i class="bi bi-plus-circle me-2"></i>Add Medicine</a>
+    </div>
+</section>
+
+<section class="panel-card">
+    <div class="table-responsive">
+        <table id="medicinesTable" class="table align-middle admin-table data-table">
+            <thead>
+                <tr>
+                    <th>Medicine ID</th>
+                    <th>Medicine Name</th>
+                    <th>Generic Name</th>
+                    <th>Company</th>
+                    <th>Category</th>
+                    <th>Barcode</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for medicine in medicines %}
+                    <tr>
+                        <td>#{{ medicine.medicine_id }}</td>
+                        <td><a href="{{ url_for('medicines.detail', medicine_id=medicine.medicine_id) }}" class="table-link">{{ medicine.medicine_name }}</a></td>
+                        <td>{{ medicine.generic_name }}</td>
+                        <td>{{ medicine.company }}</td>
+                        <td>{{ medicine.category }}</td>
+                        <td><span class="code-pill">{{ medicine.barcode }}</span></td>
+                        <td><span class="badge text-bg-success">{{ medicine.status }}</span></td>
+                        <td class="text-end">
+                            <div class="action-buttons">
+                                <a class="btn btn-sm icon-btn table-icon" href="{{ url_for('medicines.detail', medicine_id=medicine.medicine_id) }}" title="View"><i class="bi bi-eye"></i></a>
+                                <a class="btn btn-sm icon-btn table-icon" href="{{ url_for('medicines.edit', medicine_id=medicine.medicine_id) }}" title="Edit"><i class="bi bi-pencil"></i></a>
+                                <button class="btn btn-sm icon-btn table-icon danger" data-bs-toggle="modal" data-bs-target="#deleteMedicine{{ medicine.medicine_id }}" title="Delete"><i class="bi bi-trash"></i></button>
+                            </div>
+
+                            <div class="modal fade" id="deleteMedicine{{ medicine.medicine_id }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Delete Medicine</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body text-start">
+                                            Move <strong>{{ medicine.medicine_name }}</strong> out of the active catalog?
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                                            <form method="post" action="{{ url_for('medicines.delete', medicine_id=medicine.medicine_id) }}">
+                                                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                                                <button type="submit" class="btn btn-danger">Delete</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
+
+{% block app_scripts %}
+<link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.bootstrap5.css">
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/2.0.8/js/dataTables.js"></script>
+<script src="https://cdn.datatables.net/2.0.8/js/dataTables.bootstrap5.js"></script>
+{% endblock %}

@@ -1,0 +1,103 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}{{ medicine.medicine_name }} | Medical Store Management{% endblock %}
+{% block page_heading %}Medicine Details{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div>
+        <p class="section-kicker">Medicine Details</p>
+        <h1>{{ medicine.medicine_name }}</h1>
+        <p>{{ medicine.generic_name }} by {{ medicine.company }}</p>
+    </div>
+    <div class="page-actions">
+        <a href="{{ url_for('medicines.edit', medicine_id=medicine.medicine_id) }}" class="btn btn-outline-primary"><i class="bi bi-pencil me-2"></i>Edit</a>
+        <a href="{{ url_for('inventory.add') }}?medicine_id={{ medicine.medicine_id }}" class="btn btn-primary"><i class="bi bi-plus-circle me-2"></i>Add Batch</a>
+    </div>
+</section>
+
+<section class="detail-grid">
+    <article class="panel-card">
+        <div class="panel-header"><div><h2>Medicine Information</h2><p>Master catalog record</p></div></div>
+        <dl class="info-list">
+            <div><dt>ID</dt><dd>#{{ medicine.medicine_id }}</dd></div>
+            <div><dt>Name</dt><dd>{{ medicine.medicine_name }}</dd></div>
+            <div><dt>Generic</dt><dd>{{ medicine.generic_name }}</dd></div>
+            <div><dt>Company</dt><dd>{{ medicine.company }}</dd></div>
+            <div><dt>Category</dt><dd>{{ medicine.category }}</dd></div>
+            <div><dt>Barcode</dt><dd>{{ medicine.barcode }}</dd></div>
+        </dl>
+    </article>
+
+    <article class="panel-card">
+        <div class="panel-header"><div><h2>Current Inventory</h2><p>Available batches</p></div></div>
+        <div class="table-responsive">
+            <table class="table align-middle admin-table">
+                <thead><tr><th>Batch</th><th>Qty</th><th>Sale</th><th>Expiry</th></tr></thead>
+                <tbody>
+                    {% for item in inventory_items %}
+                        <tr>
+                            <td>{{ item.batch_no }}</td>
+                            <td>{{ item.quantity }}</td>
+                            <td>Rs {{ "{:,.2f}".format(item.sale_price or 0) }}</td>
+                            <td>{{ item.expiry_date.strftime('%d %b %Y') if item.expiry_date else '-' }}</td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="4" class="empty-state">No inventory batches found.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </article>
+</section>
+
+<section class="tables-grid">
+    <article class="panel-card">
+        <div class="panel-header"><div><h2>Stock History</h2><p>Recent stock movements</p></div></div>
+        <div class="table-responsive">
+            <table class="table align-middle admin-table">
+                <thead><tr><th>Type</th><th>Quantity</th><th>Reference</th><th>Date</th></tr></thead>
+                <tbody>
+                    {% for row in stock_history %}
+                        <tr><td>{{ row.movement_type }}</td><td>{{ row.quantity }}</td><td>{{ row.reference_id or '-' }}</td><td>{{ row.movement_date.strftime('%d %b %Y') if row.movement_date else '-' }}</td></tr>
+                    {% else %}
+                        <tr><td colspan="4" class="empty-state">No stock history yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </article>
+
+    <article class="panel-card">
+        <div class="panel-header"><div><h2>Recent Purchases</h2><p>Purchase detail rows</p></div></div>
+        <div class="table-responsive">
+            <table class="table align-middle admin-table">
+                <thead><tr><th>ID</th><th>Date</th><th>Qty</th><th>Purchase</th></tr></thead>
+                <tbody>
+                    {% for row in recent_purchases %}
+                        <tr><td>#{{ row.purchase_id }}</td><td>{{ row.purchase_date.strftime('%d %b %Y') if row.purchase_date else '-' }}</td><td>{{ row.quantity }}</td><td>Rs {{ "{:,.2f}".format(row.purchase_price or 0) }}</td></tr>
+                    {% else %}
+                        <tr><td colspan="4" class="empty-state">No purchase details yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </article>
+</section>
+
+<section class="panel-card">
+    <div class="panel-header"><div><h2>Recent Sales</h2><p>Sale detail rows</p></div></div>
+    <div class="table-responsive">
+        <table class="table align-middle admin-table">
+            <thead><tr><th>Sale ID</th><th>Date</th><th>Quantity</th><th>Unit Price</th><th class="text-end">Subtotal</th></tr></thead>
+            <tbody>
+                {% for row in recent_sales %}
+                    <tr><td>#{{ row.sale_id }}</td><td>{{ row.sale_date.strftime('%d %b %Y') if row.sale_date else '-' }}</td><td>{{ row.quantity }}</td><td>Rs {{ "{:,.2f}".format(row.unit_price or 0) }}</td><td class="text-end">Rs {{ "{:,.2f}".format(row.subtotal or 0) }}</td></tr>
+                {% else %}
+                    <tr><td colspan="5" class="empty-state">No sales details yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

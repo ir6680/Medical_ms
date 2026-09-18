@@ -1,0 +1,75 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}Create Purchase | Medical Store Management{% endblock %}
+{% block page_heading %}Create Purchase{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div>
+        <p class="section-kicker">Purchase Invoice</p>
+        <h1>Create Purchase Invoice</h1>
+        <p>Receive stock, update inventory, and log stock movement in one transaction.</p>
+    </div>
+    <a href="{{ url_for('purchases.index') }}" class="btn btn-outline-primary"><i class="bi bi-arrow-left me-2"></i>History</a>
+</section>
+
+<section class="panel-card form-panel purchase-form-panel">
+    <form method="post" id="purchaseForm" novalidate>
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <label class="form-label" for="supplier_id">Supplier</label>
+                <select class="form-select" id="supplier_id" name="supplier_id" required>
+                    <option value="">Select supplier</option>
+                    {% for supplier in suppliers %}
+                        <option value="{{ supplier.supplier_id }}" {% if form_data.get('supplier_id') == (supplier.supplier_id|string) or request.args.get('supplier_id') == (supplier.supplier_id|string) %}selected{% endif %}>{{ supplier.supplier_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="purchase_date">Purchase Date</label>
+                <input type="datetime-local" class="form-control" id="purchase_date" name="purchase_date" value="{{ form_data.get('purchase_date') or default_purchase_date }}" required>
+            </div>
+        </div>
+
+        <div class="purchase-lines-header">
+            <h2>Line Items</h2>
+            <button type="button" class="btn btn-outline-primary btn-sm" id="addPurchaseRow"><i class="bi bi-plus-circle me-2"></i>Add Medicine</button>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table align-middle admin-table purchase-lines-table">
+                <thead><tr><th>Medicine</th><th>Batch</th><th>Qty</th><th>Purchase</th><th>Sale</th><th>Expiry</th><th class="text-end">Subtotal</th><th></th></tr></thead>
+                <tbody id="purchaseLines">
+                    {% set rows = line_items if line_items else [{}] %}
+                    {% for item in rows %}
+                        <tr class="purchase-line">
+                            <td>
+                                <select class="form-select medicine-select" name="medicine_id[]" required>
+                                    <option value="">Medicine</option>
+                                    {% for medicine in medicines %}
+                                        <option value="{{ medicine.medicine_id }}" {% if item.medicine_id == medicine.medicine_id %}selected{% endif %}>{{ medicine.medicine_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td><input class="form-control" name="batch_no[]" value="{{ item.batch_no or '' }}" required></td>
+                            <td><input type="number" min="1" class="form-control line-qty" name="quantity[]" value="{{ item.quantity or '' }}" required></td>
+                            <td><input type="number" min="0" step="0.01" class="form-control line-purchase" name="purchase_price[]" value="{{ item.purchase_price or '' }}" required></td>
+                            <td><input type="number" min="0" step="0.01" class="form-control" name="sale_price[]" value="{{ item.sale_price or '' }}" required></td>
+                            <td><input type="date" class="form-control" name="expiry_date[]" value="{{ item.expiry_date or '' }}" required></td>
+                            <td class="text-end line-subtotal">Rs 0.00</td>
+                            <td class="text-end"><button type="button" class="btn btn-sm icon-btn table-icon danger remove-line"><i class="bi bi-x-lg"></i></button></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot><tr><th colspan="6" class="text-end">Total</th><th class="text-end" id="purchaseTotal">Rs 0.00</th><th></th></tr></tfoot>
+            </table>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2">
+            <a href="{{ url_for('purchases.index') }}" class="btn btn-light">Cancel</a>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check2-circle me-2"></i>Save Purchase</button>
+        </div>
+    </form>
+</section>
+{% endblock %}

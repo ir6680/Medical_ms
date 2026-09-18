@@ -1,0 +1,159 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}Reports | Medical Store Management{% endblock %}
+{% block page_heading %}Reports{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div>
+        <p class="section-kicker">Operational Reports</p>
+        <h1>Reports Dashboard</h1>
+        <p>Review sales, purchase, inventory, supplier, and medicine performance.</p>
+    </div>
+</section>
+
+<section class="stats-grid" aria-label="Report KPIs">
+    {% for item in kpis %}
+        <article class="stat-card accent-{{ item.accent }}">
+            <div class="stat-icon"><i class="bi {{ item.icon }}"></i></div>
+            <div><span>{{ item.label }}</span><strong>{{ item.value }}</strong><small>Current report data</small></div>
+        </article>
+    {% endfor %}
+</section>
+
+<section class="charts-grid">
+    <article class="panel-card chart-panel wide">
+        <div class="panel-header"><div><h2>Daily Sales Trend</h2><p>Last 30 days revenue movement</p></div></div>
+        <div class="chart-wrap"><canvas id="reportDailySalesChart"></canvas></div>
+    </article>
+    <article class="panel-card chart-panel">
+        <div class="panel-header"><div><h2>Monthly Revenue Trend</h2><p>Revenue by month</p></div></div>
+        <div class="chart-wrap"><canvas id="reportMonthlyRevenueChart"></canvas></div>
+    </article>
+    <article class="panel-card chart-panel">
+        <div class="panel-header"><div><h2>Top Selling Medicines</h2><p>Quantity sold by medicine</p></div></div>
+        <div class="chart-wrap"><canvas id="reportTopSellingChart"></canvas></div>
+    </article>
+    <article class="panel-card chart-panel">
+        <div class="panel-header"><div><h2>Inventory Health Distribution</h2><p>Stock status spread</p></div></div>
+        <div class="chart-wrap doughnut-wrap"><canvas id="reportInventoryHealthChart"></canvas></div>
+    </article>
+</section>
+
+<section class="tables-grid">
+    <article class="panel-card">
+        <div class="panel-header">
+            <div><h2>Sales Reports</h2><p>Filter sales by period or custom date range</p></div>
+        </div>
+        <form method="get" class="row g-2 mb-3">
+            <div class="col-md-4">
+                <select class="form-select" name="period">
+                    <option value="today" {% if sale_period == 'today' %}selected{% endif %}>Today</option>
+                    <option value="week" {% if sale_period == 'week' %}selected{% endif %}>This Week</option>
+                    <option value="month" {% if sale_period == 'month' %}selected{% endif %}>This Month</option>
+                    <option value="custom" {% if sale_period == 'custom' %}selected{% endif %}>Custom Date Range</option>
+                </select>
+            </div>
+            <div class="col-md-3"><input type="date" class="form-control" name="start_date" value="{{ sale_start }}"></div>
+            <div class="col-md-3"><input type="date" class="form-control" name="end_date" value="{{ sale_end }}"></div>
+            <div class="col-md-2"><button class="btn btn-primary w-100" type="submit">Apply</button></div>
+        </form>
+        <dl class="info-list mb-3">
+            <div><dt>Total Sales</dt><dd>{{ sales.total_units or 0 }} units</dd></div>
+            <div><dt>Invoices</dt><dd>{{ sales.invoice_count or 0 }}</dd></div>
+            <div><dt>Revenue</dt><dd>Rs {{ "{:,.2f}".format(sales.revenue or 0) }}</dd></div>
+            <div><dt>Profit</dt><dd>Rs {{ "{:,.2f}".format(sales.profit or 0) }}</dd></div>
+        </dl>
+        <div class="action-buttons">
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('reports.index', export='sales', format='csv', period=sale_period, start_date=sale_start, end_date=sale_end) }}">CSV</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('reports.index', export='sales', format='excel', period=sale_period, start_date=sale_start, end_date=sale_end) }}">Excel</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('reports.index', export='sales', format='pdf', period=sale_period, start_date=sale_start, end_date=sale_end) }}">PDF</a>
+        </div>
+    </article>
+
+    <article class="panel-card">
+        <div class="panel-header"><div><h2>Purchase Reports</h2><p>Filter supplier purchase totals</p></div></div>
+        <form method="get" class="row g-2 mb-3">
+            <div class="col-md-4">
+                <select class="form-select" name="supplier_id">
+                    <option value="">All suppliers</option>
+                    {% for supplier in suppliers %}
+                        <option value="{{ supplier.supplier_id }}" {% if selected_supplier_id == supplier.supplier_id %}selected{% endif %}>{{ supplier.supplier_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3"><input type="date" class="form-control" name="purchase_start" value="{{ purchase_start }}"></div>
+            <div class="col-md-3"><input type="date" class="form-control" name="purchase_end" value="{{ purchase_end }}"></div>
+            <div class="col-md-2"><button class="btn btn-primary w-100" type="submit">Apply</button></div>
+        </form>
+        <dl class="info-list mb-3">
+            <div><dt>Purchase Amount</dt><dd>Rs {{ "{:,.2f}".format(purchases.purchase_amount or 0) }}</dd></div>
+            <div><dt>Purchase Count</dt><dd>{{ purchases.purchase_count or 0 }}</dd></div>
+        </dl>
+        <div class="action-buttons">
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('reports.index', export='purchases', format='csv', purchase_start=purchase_start, purchase_end=purchase_end, supplier_id=selected_supplier_id or '') }}">CSV</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('reports.index', export='purchases', format='excel', purchase_start=purchase_start, purchase_end=purchase_end, supplier_id=selected_supplier_id or '') }}">Excel</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('reports.index', export='purchases', format='pdf', purchase_start=purchase_start, purchase_end=purchase_end, supplier_id=selected_supplier_id or '') }}">PDF</a>
+        </div>
+    </article>
+</section>
+
+<section class="tables-grid">
+    <article class="panel-card">
+        <div class="panel-header">
+            <div><h2>Inventory Reports</h2><p>Current stock and expiry posture</p></div>
+            <div class="action-buttons">
+                <a class="btn btn-sm btn-outline-primary" href="{{ url_for('reports.index', export='inventory', format='csv') }}">CSV</a>
+                <a class="btn btn-sm btn-outline-primary" href="{{ url_for('reports.index', export='inventory', format='excel') }}">Excel</a>
+                <a class="btn btn-sm btn-outline-primary" href="{{ url_for('reports.index', export='inventory', format='pdf') }}">PDF</a>
+            </div>
+        </div>
+        <dl class="info-list">
+            <div><dt>Current Stock</dt><dd>{{ inventory.current_stock or 0 }} units</dd></div>
+            <div><dt>Inventory Value</dt><dd>Rs {{ "{:,.2f}".format(inventory.inventory_value or 0) }}</dd></div>
+            <div><dt>Low Stock Items</dt><dd>{{ inventory.low_stock or 0 }}</dd></div>
+            <div><dt>Critical Stock Items</dt><dd>{{ inventory.critical_stock or 0 }}</dd></div>
+            <div><dt>Expiring Medicines</dt><dd>{{ inventory.expiring or 0 }}</dd></div>
+            <div><dt>Expired Medicines</dt><dd>{{ inventory.expired or 0 }}</dd></div>
+        </dl>
+    </article>
+
+    <article class="panel-card">
+        <div class="panel-header"><div><h2>Top Suppliers</h2><p>Supplier performance by purchase value</p></div></div>
+        <div class="table-responsive">
+            <table class="table align-middle admin-table">
+                <thead><tr><th>Supplier</th><th>Purchases</th><th class="text-end">Amount</th></tr></thead>
+                <tbody>
+                    {% for supplier in top_suppliers %}
+                        <tr><td>{{ supplier.supplier_name }}</td><td>{{ supplier.purchase_count }}</td><td class="text-end">Rs {{ "{:,.2f}".format(supplier.purchase_amount or 0) }}</td></tr>
+                    {% else %}
+                        <tr><td colspan="3" class="empty-state">No supplier report data yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </article>
+</section>
+
+<section class="panel-card">
+    <div class="panel-header"><div><h2>Top Selling Medicines</h2><p>Medicine quantity and revenue generated</p></div></div>
+    <div class="table-responsive">
+        <table class="table align-middle admin-table">
+            <thead><tr><th>Medicine</th><th>Quantity Sold</th><th class="text-end">Revenue Generated</th></tr></thead>
+            <tbody>
+                {% for medicine in top_selling %}
+                    <tr><td>{{ medicine.medicine_name }}</td><td>{{ medicine.quantity_sold }}</td><td class="text-end">Rs {{ "{:,.2f}".format(medicine.revenue or 0) }}</td></tr>
+                {% else %}
+                    <tr><td colspan="3" class="empty-state">No sales report data yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<script id="reports-data" type="application/json">{{ chart_data|tojson }}</script>
+{% endblock %}
+
+{% block app_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{% endblock %}

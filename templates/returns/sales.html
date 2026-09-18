@@ -1,0 +1,65 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}Sale Returns | Medical Store Management{% endblock %}
+{% block page_heading %}Sale Returns{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div><p class="section-kicker">Return Management</p><h1>Customer Sale Return</h1><p>Find an invoice, return eligible items, and restore stock.</p></div>
+    <div class="page-actions"><a href="{{ url_for('returns.purchases') }}" class="btn btn-outline-primary"><i class="bi bi-truck me-2"></i>Purchase Returns</a></div>
+</section>
+
+<section class="panel-card form-panel">
+    <form method="get" class="row g-2">
+        <div class="col-md-9"><input class="form-control" name="sale_id" value="{{ sale_id }}" placeholder="Enter sale invoice number"></div>
+        <div class="col-md-3"><button class="btn btn-primary w-100" type="submit"><i class="bi bi-search me-2"></i>Search Invoice</button></div>
+    </form>
+</section>
+
+{% if sale %}
+<section class="panel-card mt-3">
+    <div class="panel-header"><div><h2>Invoice #{{ sale.sale_id }}</h2><p>{{ sale.employee }} - {{ sale.sale_date.strftime('%d %b %Y, %I:%M %p') if sale.sale_date else '-' }}</p></div><strong>Rs {{ "{:,.2f}".format(sale.total_amount or 0) }}</strong></div>
+    <div class="table-responsive">
+        <table class="table align-middle admin-table">
+            <thead><tr><th>Medicine</th><th>Sold</th><th>Returned</th><th>Return Qty</th><th>Reason</th><th class="text-end">Action</th></tr></thead>
+            <tbody>
+                {% for item in items %}
+                    {% set remaining = item.quantity - item.returned_qty %}
+                    <tr>
+                        <td>{{ item.medicine_name }}<small class="d-block text-muted">{{ item.generic_name }}</small></td>
+                        <td>{{ item.quantity }}</td>
+                        <td>{{ item.returned_qty }}</td>
+                        <form method="post">
+                            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="sale_id" value="{{ sale.sale_id }}">
+                            <input type="hidden" name="sale_detail_id" value="{{ item.detail_id }}">
+                            <td><input type="number" class="form-control" name="quantity" min="1" max="{{ remaining }}" {% if remaining <= 0 %}disabled{% endif %}></td>
+                            <td><select class="form-select" name="reason" {% if remaining <= 0 %}disabled{% endif %}>{% for reason in reasons %}<option value="{{ reason }}">{{ reason }}</option>{% endfor %}</select></td>
+                            <td class="text-end"><button class="btn btn-sm btn-primary" type="submit" {% if remaining <= 0 %}disabled{% endif %}>Return</button></td>
+                        </form>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% elif sale_id %}
+<section class="panel-card mt-3"><div class="empty-state">No sale invoice found.</div></section>
+{% endif %}
+
+<section class="panel-card mt-3">
+    <div class="panel-header"><div><h2>Recent Sale Returns</h2><p>Latest customer return records</p></div></div>
+    <div class="table-responsive">
+        <table class="table align-middle admin-table">
+            <thead><tr><th>Return ID</th><th>Sale</th><th>Date</th><th>User</th><th class="text-end">Amount</th></tr></thead>
+            <tbody>
+                {% for row in returns %}
+                    <tr><td>#{{ row.return_id }}</td><td>#{{ row.sale_id }}</td><td>{{ row.return_date.strftime('%d %b %Y, %I:%M %p') if row.return_date else '-' }}</td><td>{{ row.username }}</td><td class="text-end">Rs {{ "{:,.2f}".format(row.total_amount or 0) }}</td></tr>
+                {% else %}
+                    <tr><td colspan="5" class="empty-state">No sale returns recorded.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

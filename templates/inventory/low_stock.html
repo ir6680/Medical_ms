@@ -1,0 +1,41 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}Low Stock | Medical Store Management{% endblock %}
+{% block page_heading %}Low Stock{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div>
+        <p class="section-kicker">Stock Control</p>
+        <h1>Low and Critical Stock</h1>
+        <p>Review warning and critical batches and plan reorder quantities.</p>
+    </div>
+    <a href="{{ url_for('inventory.index') }}" class="btn btn-outline-primary"><i class="bi bi-arrow-left me-2"></i>Inventory</a>
+</section>
+
+<section class="panel-card">
+    <div class="table-responsive">
+        <table id="lowStockTable" class="table align-middle admin-table data-table">
+            <thead><tr><th>Medicine</th><th>Status</th><th>Quantity</th><th>Batch</th><th>Reorder Suggestion</th></tr></thead>
+            <tbody>
+                {% for row in rows %}
+                    <tr>
+                        <td><a class="table-link" href="{{ url_for('medicines.detail', medicine_id=row.medicine_id) }}">{{ row.medicine_name }}</a></td>
+                        <td><span class="badge text-bg-{{ 'warning' if row.quantity >= 10 else 'danger' }}">{{ 'Warning' if row.quantity >= 10 else 'Critical' }}</span></td>
+                        <td>{{ row.quantity }}</td>
+                        <td>{{ row.batch_no }}</td>
+                        <td>Reorder at least {{ row.reorder_qty }} units</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
+
+{% block app_scripts %}
+<link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.bootstrap5.css">
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/2.0.8/js/dataTables.js"></script>
+<script src="https://cdn.datatables.net/2.0.8/js/dataTables.bootstrap5.js"></script>
+{% endblock %}

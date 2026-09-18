@@ -1,0 +1,59 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}Sale #{{ sale.sale_id }} | Medical Store Management{% endblock %}
+{% block page_heading %}Sale Details{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div>
+        <p class="section-kicker">Sale Invoice</p>
+        <h1>Sale #{{ sale.sale_id }}</h1>
+        <p>{{ sale.employee }} - {{ sale.sale_date.strftime('%d %b %Y, %I:%M %p') if sale.sale_date else '-' }}</p>
+    </div>
+    <div class="page-actions">
+        <a href="{{ url_for('sales.index') }}" class="btn btn-outline-primary"><i class="bi bi-arrow-left me-2"></i>History</a>
+        <a href="{{ url_for('sales.create') }}" class="btn btn-primary"><i class="bi bi-plus-circle me-2"></i>New Sale</a>
+    </div>
+</section>
+
+<section class="detail-grid">
+    <article class="panel-card">
+        <div class="panel-header"><div><h2>Invoice Information</h2><p>Employee and totals</p></div></div>
+        <dl class="info-list">
+            <div><dt>Invoice</dt><dd>#{{ sale.sale_id }}</dd></div>
+            <div><dt>Employee</dt><dd>{{ sale.employee }}</dd></div>
+            <div><dt>Date</dt><dd>{{ sale.sale_date.strftime('%d %b %Y, %I:%M %p') if sale.sale_date else '-' }}</dd></div>
+            <div><dt>Total</dt><dd>Rs {{ "{:,.2f}".format(sale.total_amount or 0) }}</dd></div>
+        </dl>
+    </article>
+    <article class="panel-card">
+        <div class="panel-header"><div><h2>Processing</h2><p>Inventory movement</p></div></div>
+        <dl class="info-list">
+            <div><dt>Movement Type</dt><dd>Sale</dd></div>
+            <div><dt>Deduction</dt><dd>FIFO by earliest expiry</dd></div>
+            <div><dt>Employee Role</dt><dd>{{ sale.employee_role }}</dd></div>
+        </dl>
+    </article>
+</section>
+
+<section class="panel-card">
+    <div class="panel-header"><div><h2>Sold Medicines</h2><p>Quantity, price, and subtotal breakdown</p></div></div>
+    <div class="table-responsive">
+        <table class="table align-middle admin-table">
+            <thead><tr><th>Medicine</th><th>Qty</th><th>Unit Price</th><th class="text-end">Subtotal</th></tr></thead>
+            <tbody>
+                {% for item in items %}
+                    <tr>
+                        <td>{{ item.medicine_name }}<small class="d-block text-muted">{{ item.generic_name }}</small></td>
+                        <td>{{ item.quantity }}</td>
+                        <td>Rs {{ "{:,.2f}".format(item.unit_price or 0) }}</td>
+                        <td class="text-end">Rs {{ "{:,.2f}".format(item.subtotal or 0) }}</td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="4" class="empty-state">No sale detail rows found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

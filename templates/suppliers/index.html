@@ -1,0 +1,83 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}Suppliers | Medical Store Management{% endblock %}
+{% block page_heading %}Suppliers{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div>
+        <p class="section-kicker">Supplier Network</p>
+        <h1>Suppliers</h1>
+        <p>Manage supplier profiles, contacts, and purchase activity.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{{ url_for('suppliers.export_csv') }}" class="btn btn-outline-primary"><i class="bi bi-filetype-csv me-2"></i>CSV</a>
+        <a href="{{ url_for('suppliers.export_excel') }}" class="btn btn-outline-primary"><i class="bi bi-file-earmark-spreadsheet me-2"></i>Excel</a>
+        <a href="{{ url_for('suppliers.add') }}" class="btn btn-primary"><i class="bi bi-plus-circle me-2"></i>Add Supplier</a>
+    </div>
+</section>
+
+<section class="panel-card">
+    <div class="table-responsive">
+        <table id="suppliersTable" class="table align-middle admin-table data-table">
+            <thead>
+                <tr>
+                    <th>Supplier ID</th>
+                    <th>Supplier Name</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    <th>Address</th>
+                    <th>Total Purchases</th>
+                    <th>Last Purchase Date</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for supplier in suppliers %}
+                    <tr>
+                        <td>#{{ supplier.supplier_id }}</td>
+                        <td><a class="table-link" href="{{ url_for('suppliers.detail', supplier_id=supplier.supplier_id) }}">{{ supplier.supplier_name }}</a></td>
+                        <td>{{ supplier.phone or '-' }}</td>
+                        <td>{{ supplier.email or '-' }}</td>
+                        <td>{{ supplier.address or '-' }}</td>
+                        <td>{{ supplier.total_purchases }}</td>
+                        <td>{{ supplier.last_purchase_date.strftime('%d %b %Y') if supplier.last_purchase_date else '-' }}</td>
+                        <td class="text-end">
+                            <div class="action-buttons">
+                                <a class="btn btn-sm icon-btn table-icon" href="{{ url_for('suppliers.detail', supplier_id=supplier.supplier_id) }}" title="View"><i class="bi bi-eye"></i></a>
+                                <a class="btn btn-sm icon-btn table-icon" href="{{ url_for('suppliers.edit', supplier_id=supplier.supplier_id) }}" title="Edit"><i class="bi bi-pencil"></i></a>
+                                <button class="btn btn-sm icon-btn table-icon danger" data-bs-toggle="modal" data-bs-target="#deleteSupplier{{ supplier.supplier_id }}" title="Delete"><i class="bi bi-trash"></i></button>
+                            </div>
+                            <div class="modal fade" id="deleteSupplier{{ supplier.supplier_id }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Delete Supplier</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body text-start">Move <strong>{{ supplier.supplier_name }}</strong> out of the active supplier list?</div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                                            <form method="post" action="{{ url_for('suppliers.delete', supplier_id=supplier.supplier_id) }}">
+                                                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                                                <button type="submit" class="btn btn-danger">Delete</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
+
+{% block app_scripts %}
+<link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.bootstrap5.css">
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/2.0.8/js/dataTables.js"></script>
+<script src="https://cdn.datatables.net/2.0.8/js/dataTables.bootstrap5.js"></script>
+{% endblock %}

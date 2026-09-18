@@ -1,0 +1,47 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}Stock Ledger | Medical Store Management{% endblock %}
+{% block page_heading %}Stock Ledger{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div><p class="section-kicker">Inventory Ledger</p><h1>Stock Movements</h1><p>Every stock change across purchases, sales, returns, adjustments, and disposals.</p></div>
+</section>
+
+<section class="panel-card">
+    <form method="get" class="row g-2 mb-3">
+        <div class="col-md-10">
+            <select class="form-select" name="type">
+                <option value="">All movement types</option>
+                {% for type in movement_types %}<option value="{{ type }}" {% if selected_type == type %}selected{% endif %}>{{ type }}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2"><button class="btn btn-primary w-100" type="submit">Filter</button></div>
+    </form>
+    <div class="table-responsive">
+        <table class="table align-middle admin-table data-table">
+            <thead><tr><th>Date</th><th>Medicine</th><th>Batch</th><th>Movement Type</th><th>Quantity</th><th>User</th><th>Reference</th></tr></thead>
+            <tbody>
+                {% for row in rows %}
+                    <tr>
+                        <td>{{ row.movement_date.strftime('%d %b %Y, %I:%M %p') if row.movement_date else '-' }}</td>
+                        <td>{{ row.medicine_name }}</td>
+                        <td>{{ row.batch_no or '-' }}</td>
+                        <td>{{ row.movement_type }}</td>
+                        <td>{{ row.quantity }}</td>
+                        <td>{{ row.username }}</td>
+                        <td>{{ row.reference_id or '-' }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
+
+{% block app_scripts %}
+<link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.bootstrap5.css">
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/2.0.8/js/dataTables.js"></script>
+<script src="https://cdn.datatables.net/2.0.8/js/dataTables.bootstrap5.js"></script>
+{% endblock %}

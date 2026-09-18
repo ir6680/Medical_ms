@@ -1,0 +1,58 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}Cash Register | Medical Store Management{% endblock %}
+{% block page_heading %}Cash Register{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div><p class="section-kicker">Cash Management</p><h1>Cash Register</h1><p>Track opening cash, closing cash, sales, expenses, and differences.</p></div>
+    <div class="page-actions"><a href="{{ url_for('cash_register.closing_report', date=register_date) }}" class="btn btn-outline-primary"><i class="bi bi-file-earmark-text me-2"></i>Closing Report</a><a href="{{ url_for('expenses.index') }}" class="btn btn-outline-primary"><i class="bi bi-wallet2 me-2"></i>Expenses</a></div>
+</section>
+
+<section class="stats-grid inventory-stats">
+    <article class="stat-card accent-teal"><div class="stat-icon"><i class="bi bi-cash-coin"></i></div><div><span>Total Sales</span><strong>Rs {{ "{:,.2f}".format(summary.total_sales or 0) }}</strong><small>{{ register_date }}</small></div></article>
+    <article class="stat-card accent-danger"><div class="stat-icon"><i class="bi bi-wallet2"></i></div><div><span>Expenses</span><strong>Rs {{ "{:,.2f}".format(summary.expenses or 0) }}</strong><small>Daily spend</small></div></article>
+    <article class="stat-card accent-info"><div class="stat-icon"><i class="bi bi-calculator"></i></div><div><span>Expected Cash</span><strong>Rs {{ "{:,.2f}".format(expected_cash or 0) }}</strong><small>Opening + sales - returns - expenses</small></div></article>
+    <article class="stat-card accent-warning"><div class="stat-icon"><i class="bi bi-exclamation-triangle"></i></div><div><span>Cash Difference</span><strong>Rs {{ "{:,.2f}".format(cash_difference or 0) }}</strong><small>Closing vs expected</small></div></article>
+</section>
+
+<section class="detail-grid">
+    <article class="panel-card form-panel">
+        <div class="panel-header"><div><h2>Register Entry</h2><p>One cash register per date</p></div></div>
+        <form method="post" class="row g-3">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <div class="col-md-4"><label class="form-label" for="register_date">Date</label><input type="date" class="form-control" id="register_date" name="register_date" value="{{ register_date }}" required></div>
+            <div class="col-md-4"><label class="form-label" for="opening_cash">Opening Cash</label><input type="number" min="0" step="0.01" class="form-control" id="opening_cash" name="opening_cash" value="{{ register.opening_cash if register else 0 }}"></div>
+            <div class="col-md-4"><label class="form-label" for="closing_cash">Closing Cash</label><input type="number" min="0" step="0.01" class="form-control" id="closing_cash" name="closing_cash" value="{{ register.closing_cash if register else 0 }}"></div>
+            <div class="col-12"><label class="form-label" for="notes">Notes</label><textarea class="form-control" id="notes" name="notes" rows="2">{{ register.notes if register else '' }}</textarea></div>
+            <div class="col-12 d-flex justify-content-end"><button class="btn btn-primary" type="submit"><i class="bi bi-check2-circle me-2"></i>Save Register</button></div>
+        </form>
+    </article>
+    <article class="panel-card">
+        <div class="panel-header"><div><h2>Daily Totals</h2><p>Financial activity for selected date</p></div></div>
+        <dl class="info-list">
+            <div><dt>Total Sales</dt><dd>Rs {{ "{:,.2f}".format(summary.total_sales or 0) }}</dd></div>
+            <div><dt>Total Purchases</dt><dd>Rs {{ "{:,.2f}".format(summary.total_purchases or 0) }}</dd></div>
+            <div><dt>Sale Returns</dt><dd>Rs {{ "{:,.2f}".format(summary.sale_returns or 0) }}</dd></div>
+            <div><dt>Purchase Returns</dt><dd>Rs {{ "{:,.2f}".format(summary.purchase_returns or 0) }}</dd></div>
+            <div><dt>Expenses</dt><dd>Rs {{ "{:,.2f}".format(summary.expenses or 0) }}</dd></div>
+        </dl>
+    </article>
+</section>
+
+<section class="panel-card">
+    <div class="panel-header"><div><h2>Recent Registers</h2><p>Latest cash register entries</p></div></div>
+    <div class="table-responsive">
+        <table class="table align-middle admin-table">
+            <thead><tr><th>Date</th><th class="text-end">Opening</th><th class="text-end">Closing</th><th>Updated</th></tr></thead>
+            <tbody>
+                {% for row in registers %}
+                    <tr><td><a class="table-link" href="{{ url_for('cash_register.index', date=row.register_date) }}">{{ row.register_date.strftime('%d %b %Y') }}</a></td><td class="text-end">Rs {{ "{:,.2f}".format(row.opening_cash or 0) }}</td><td class="text-end">Rs {{ "{:,.2f}".format(row.closing_cash or 0) }}</td><td>{{ row.updated_at.strftime('%d %b %Y, %I:%M %p') if row.updated_at else '-' }}</td></tr>
+                {% else %}
+                    <tr><td colspan="4" class="empty-state">No cash register entries yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

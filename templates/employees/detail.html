@@ -1,0 +1,77 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}{{ employee.display_name }} | Medical Store Management{% endblock %}
+{% block page_heading %}Employee Profile{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div>
+        <p class="section-kicker">Employee Profile</p>
+        <h1>{{ employee.display_name }}</h1>
+        <p>{{ employee.username }} - {{ employee.display_role }}</p>
+    </div>
+    <div class="page-actions">
+        <a href="{{ url_for('employees.edit', employee_id=employee.user_id) }}" class="btn btn-outline-primary"><i class="bi bi-pencil me-2"></i>Edit</a>
+        <a href="{{ url_for('employees.reset_password', employee_id=employee.user_id) }}" class="btn btn-primary"><i class="bi bi-key me-2"></i>Reset Password</a>
+    </div>
+</section>
+
+<section class="stats-grid inventory-stats">
+    <article class="stat-card accent-primary"><div class="stat-icon"><i class="bi bi-person-badge"></i></div><div><span>Employee ID</span><strong>#{{ employee.user_id }}</strong><small>{{ employee.display_role }}</small></div></article>
+    <article class="stat-card accent-info"><div class="stat-icon"><i class="bi bi-receipt"></i></div><div><span>Total Sales</span><strong>{{ totals.total_sales or 0 }}</strong><small>Invoices recorded</small></div></article>
+    <article class="stat-card accent-teal"><div class="stat-icon"><i class="bi bi-cash-coin"></i></div><div><span>Sales Amount</span><strong>Rs {{ "{:,.2f}".format(totals.sales_amount or 0) }}</strong><small>Lifetime value</small></div></article>
+</section>
+
+<section class="detail-grid">
+    <article class="panel-card">
+        <div class="panel-header"><div><h2>Employee Details</h2><p>Contact and account information</p></div></div>
+        <dl class="info-list">
+            <div><dt>Full Name</dt><dd>{{ employee.full_name or '-' }}</dd></div>
+            <div><dt>Username</dt><dd>{{ employee.username }}</dd></div>
+            <div><dt>Phone</dt><dd>{{ employee.phone or '-' }}</dd></div>
+            <div><dt>Email</dt><dd>{{ employee.email or '-' }}</dd></div>
+            <div><dt>Last Login</dt><dd>{{ employee.last_login.strftime('%d %b %Y, %I:%M %p') if employee.last_login else '-' }}</dd></div>
+            <div><dt>Account Status</dt><dd>{{ 'Active' if employee.is_active else 'Inactive' }}</dd></div>
+        </dl>
+    </article>
+    <article class="panel-card">
+        <div class="panel-header"><div><h2>Recent Sales</h2><p>Latest invoices handled by this employee</p></div></div>
+        <div class="table-responsive">
+            <table class="table align-middle admin-table">
+                <thead><tr><th>Invoice</th><th>Date</th><th class="text-end">Amount</th></tr></thead>
+                <tbody>
+                    {% for sale in recent_sales %}
+                        <tr>
+                            <td><a class="table-link" href="{{ url_for('sales.detail', sale_id=sale.sale_id) }}">#{{ sale.sale_id }}</a></td>
+                            <td>{{ sale.sale_date.strftime('%d %b %Y, %I:%M %p') if sale.sale_date else '-' }}</td>
+                            <td class="text-end">Rs {{ "{:,.2f}".format(sale.total_amount or 0) }}</td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="3" class="empty-state">No sales recorded for this employee.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </article>
+</section>
+
+<section class="panel-card">
+    <div class="panel-header"><div><h2>Login Activity</h2><p>Recent login and logout sessions</p></div></div>
+    <div class="table-responsive">
+        <table class="table align-middle admin-table">
+            <thead><tr><th>Login Time</th><th>Logout Time</th><th>IP Address</th></tr></thead>
+            <tbody>
+                {% for activity in activities %}
+                    <tr>
+                        <td>{{ activity.login_time.strftime('%d %b %Y, %I:%M %p') if activity.login_time else '-' }}</td>
+                        <td>{{ activity.logout_time.strftime('%d %b %Y, %I:%M %p') if activity.logout_time else '-' }}</td>
+                        <td>{{ activity.ip_address or '-' }}</td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="3" class="empty-state">No login activity recorded.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ purchase.invoice_no or ('Purchase #' ~ purchase.purchase_id) }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/dashboard.css') }}" rel="stylesheet">
+</head>
+<body class="invoice-print-body">
+    <main class="invoice-page">
+        <div class="invoice-toolbar">
+            <button onclick="window.print()" class="btn btn-primary"><i class="bi bi-printer me-2"></i>Print / Save PDF</button>
+            <a href="{{ url_for('purchases.detail', purchase_id=purchase.purchase_id) }}" class="btn btn-outline-primary">Back</a>
+        </div>
+        <section class="invoice-sheet">
+            <header class="invoice-header">
+                <div>
+                    <h1>MedStore Purchase Invoice</h1>
+                    <p>Medical Store Management System</p>
+                </div>
+                <div class="text-end">
+                    <strong>{{ purchase.invoice_no or ('#' ~ purchase.purchase_id) }}</strong>
+                    <span>{{ purchase.purchase_date.strftime('%d %b %Y') if purchase.purchase_date else '-' }}</span>
+                </div>
+            </header>
+            <div class="invoice-meta">
+                <div>
+                    <span>Supplier</span>
+                    <strong>{{ purchase.supplier_name }}</strong>
+                    <p>{{ purchase.phone or '' }} {{ purchase.email or '' }}<br>{{ purchase.address or '' }}</p>
+                </div>
+                <div class="text-end">
+                    <span>Total Amount</span>
+                    <strong>Rs {{ "{:,.2f}".format(purchase.total_amount or 0) }}</strong>
+                </div>
+            </div>
+            <table class="table invoice-table">
+                <thead><tr><th>Medicine</th><th>Batch</th><th>Qty</th><th>Purchase</th><th>Sale</th><th>Expiry</th><th class="text-end">Subtotal</th></tr></thead>
+                <tbody>
+                    {% for item in items %}
+                        <tr>
+                            <td>{{ item.medicine_name }}</td>
+                            <td>{{ item.batch_no }}</td>
+                            <td>{{ item.quantity }}</td>
+                            <td>Rs {{ "{:,.2f}".format(item.purchase_price or 0) }}</td>
+                            <td>Rs {{ "{:,.2f}".format(item.sale_price or 0) }}</td>
+                            <td>{{ item.expiry_date.strftime('%d %b %Y') if item.expiry_date else '-' }}</td>
+                            <td class="text-end">Rs {{ "{:,.2f}".format((item.purchase_price or 0) * (item.quantity or 0)) }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot><tr><th colspan="6" class="text-end">Total</th><th class="text-end">Rs {{ "{:,.2f}".format(purchase.total_amount or 0) }}</th></tr></tfoot>
+            </table>
+        </section>
+    </main>
+</body>
+</html>

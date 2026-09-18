@@ -1,0 +1,47 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}Purchases | Medical Store Management{% endblock %}
+{% block page_heading %}Purchases{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div>
+        <p class="section-kicker">Purchase Invoices</p>
+        <h1>Purchase History</h1>
+        <p>Review supplier invoices and received stock entries.</p>
+    </div>
+    <a href="{{ url_for('purchases.create') }}" class="btn btn-primary"><i class="bi bi-plus-circle me-2"></i>Create Purchase</a>
+</section>
+
+<section class="panel-card">
+    <div class="table-responsive">
+        <table id="purchasesTable" class="table align-middle admin-table data-table">
+            <thead><tr><th>Purchase ID</th><th>Invoice</th><th>Supplier</th><th>Date</th><th class="text-end">Total Amount</th><th class="text-end">Actions</th></tr></thead>
+            <tbody>
+                {% for purchase in purchases %}
+                    <tr>
+                        <td>#{{ purchase.purchase_id }}</td>
+                        <td><a class="table-link" href="{{ url_for('purchases.detail', purchase_id=purchase.purchase_id) }}">{{ purchase.invoice_no or '-' }}</a></td>
+                        <td>{{ purchase.supplier_name }}</td>
+                        <td>{{ purchase.purchase_date.strftime('%d %b %Y, %I:%M %p') if purchase.purchase_date else '-' }}</td>
+                        <td class="text-end">Rs {{ "{:,.2f}".format(purchase.total_amount or 0) }}</td>
+                        <td class="text-end">
+                            <div class="action-buttons">
+                                <a class="btn btn-sm icon-btn table-icon" href="{{ url_for('purchases.detail', purchase_id=purchase.purchase_id) }}" title="View"><i class="bi bi-eye"></i></a>
+                                <a class="btn btn-sm icon-btn table-icon" href="{{ url_for('purchases.pdf', purchase_id=purchase.purchase_id) }}" title="PDF"><i class="bi bi-file-earmark-pdf"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
+
+{% block app_scripts %}
+<link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.bootstrap5.css">
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/2.0.8/js/dataTables.js"></script>
+<script src="https://cdn.datatables.net/2.0.8/js/dataTables.bootstrap5.js"></script>
+{% endblock %}

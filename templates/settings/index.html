@@ -1,0 +1,143 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}Settings | Medical Store Management{% endblock %}
+{% block page_heading %}Settings{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div>
+        <p class="section-kicker">System Administration</p>
+        <h1>Settings</h1>
+        <p>Manage store details, users, inventory rules, preferences, backup, and audit history.</p>
+    </div>
+</section>
+
+<section class="tables-grid">
+    <article class="panel-card">
+        <div class="panel-header"><div><h2>Store Information</h2><p>Business profile used across invoices and reports</p></div></div>
+        <form method="post" class="row g-3">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="section" value="store">
+            <div class="col-md-6"><label class="form-label">Store Name</label><input class="form-control" name="store_name" value="{{ settings.store_name }}"></div>
+            <div class="col-md-6"><label class="form-label">Owner Name</label><input class="form-control" name="owner_name" value="{{ settings.owner_name }}"></div>
+            <div class="col-md-6"><label class="form-label">Phone</label><input class="form-control" name="phone" value="{{ settings.phone }}"></div>
+            <div class="col-md-6"><label class="form-label">Email</label><input type="email" class="form-control" name="email" value="{{ settings.email }}"></div>
+            <div class="col-12"><label class="form-label">Address</label><textarea class="form-control" name="address" rows="3">{{ settings.address }}</textarea></div>
+            <div class="col-12 text-end"><button class="btn btn-primary" type="submit"><i class="bi bi-check2-circle me-2"></i>Save Store</button></div>
+        </form>
+    </article>
+
+    <article class="panel-card">
+        <div class="panel-header"><div><h2>Change Password</h2><p>Update your own account password</p></div></div>
+        <form method="post" action="{{ url_for('settings.change_password') }}" class="row g-3">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <div class="col-12"><label class="form-label">Current Password</label><input type="password" class="form-control" name="current_password" required></div>
+            <div class="col-md-6"><label class="form-label">New Password</label><input type="password" class="form-control" name="new_password" required></div>
+            <div class="col-md-6"><label class="form-label">Confirm Password</label><input type="password" class="form-control" name="confirm_password" required></div>
+            <div class="col-12 text-end"><button class="btn btn-primary" type="submit"><i class="bi bi-key me-2"></i>Change Password</button></div>
+        </form>
+    </article>
+</section>
+
+<section class="tables-grid">
+    <article class="panel-card">
+        <div class="panel-header"><div><h2>Inventory Rules</h2><p>Thresholds used by inventory and reports</p></div></div>
+        <form method="post" class="row g-3">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="section" value="rules">
+            <div class="col-md-4"><label class="form-label">Low Stock Threshold</label><input type="number" min="1" class="form-control" name="low_stock_threshold" value="{{ settings.low_stock_threshold }}"></div>
+            <div class="col-md-4"><label class="form-label">Critical Stock Threshold</label><input type="number" min="1" class="form-control" name="critical_stock_threshold" value="{{ settings.critical_stock_threshold }}"></div>
+            <div class="col-md-4"><label class="form-label">Expiry Warning Days</label><input type="number" min="1" class="form-control" name="expiry_warning_days" value="{{ settings.expiry_warning_days }}"></div>
+            <div class="col-12 text-end"><button class="btn btn-primary" type="submit"><i class="bi bi-check2-circle me-2"></i>Save Rules</button></div>
+        </form>
+    </article>
+
+    <article class="panel-card">
+        <div class="panel-header"><div><h2>System Preferences</h2><p>Display preferences for currency and dates</p></div></div>
+        <form method="post" class="row g-3">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="section" value="preferences">
+            <div class="col-md-4"><label class="form-label">Currency Symbol</label><input class="form-control" name="currency_symbol" value="{{ settings.currency_symbol }}"></div>
+            <div class="col-md-4"><label class="form-label">Date Format</label><input class="form-control" name="date_format" value="{{ settings.date_format }}"></div>
+            <div class="col-md-4"><label class="form-label">Time Format</label><input class="form-control" name="time_format" value="{{ settings.time_format }}"></div>
+            <div class="col-12 text-end"><button class="btn btn-primary" type="submit"><i class="bi bi-check2-circle me-2"></i>Save Preferences</button></div>
+        </form>
+    </article>
+</section>
+
+<section class="panel-card mb-3">
+    <div class="panel-header"><div><h2>User Management</h2><p>Add, edit, activate, and deactivate users</p></div></div>
+    <form method="post" action="{{ url_for('settings.add_user') }}" class="row g-2 mb-3">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+        <div class="col-md-3"><input class="form-control" name="username" placeholder="Username" required></div>
+        <div class="col-md-3"><input type="password" class="form-control" name="password" placeholder="Password" required></div>
+        <div class="col-md-3">
+            <select class="form-select" name="role"><option value="Employee">Employee</option><option value="Admin">Admin</option></select>
+        </div>
+        <div class="col-md-3"><button class="btn btn-primary w-100" type="submit"><i class="bi bi-person-plus me-2"></i>Add User</button></div>
+    </form>
+    <div class="table-responsive">
+        <table class="table align-middle admin-table">
+            <thead><tr><th>User</th><th>Role</th><th>Status</th><th>Created</th><th class="text-end">Actions</th></tr></thead>
+            <tbody>
+                {% for user in users %}
+                    <tr>
+                        <td><input form="editUser{{ user.user_id }}" class="form-control" name="username" value="{{ user.username }}"></td>
+                        <td>
+                            <select form="editUser{{ user.user_id }}" class="form-select" name="role">
+                                <option value="Employee" {% if user.role == 'Employee' %}selected{% endif %}>Employee</option>
+                                <option value="Admin" {% if user.role == 'Admin' %}selected{% endif %}>Admin</option>
+                            </select>
+                        </td>
+                        <td><span class="badge text-bg-{{ 'success' if user.is_active else 'secondary' }}">{{ 'Active' if user.is_active else 'Inactive' }}</span></td>
+                        <td>{{ user.created_at.strftime('%d %b %Y') if user.created_at else '-' }}</td>
+                        <td class="text-end">
+                            <div class="action-buttons">
+                                <input form="editUser{{ user.user_id }}" type="password" class="form-control form-control-sm" name="password" placeholder="New password">
+                                <button form="editUser{{ user.user_id }}" class="btn btn-sm icon-btn table-icon" type="submit" title="Save"><i class="bi bi-check2"></i></button>
+                                <button form="toggleUser{{ user.user_id }}" class="btn btn-sm icon-btn table-icon" type="submit" title="{{ 'Deactivate' if user.is_active else 'Activate' }}"><i class="bi {{ 'bi-person-dash' if user.is_active else 'bi-person-check' }}"></i></button>
+                            </div>
+                            <form id="editUser{{ user.user_id }}" method="post" action="{{ url_for('settings.edit_user', user_id=user.user_id) }}">
+                                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                            </form>
+                            <form id="toggleUser{{ user.user_id }}" method="post" action="{{ url_for('settings.toggle_user', user_id=user.user_id) }}">
+                                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="tables-grid">
+    <article class="panel-card">
+        <div class="panel-header"><div><h2>Backup & Restore</h2><p>Download or restore database backups</p></div></div>
+        <div class="d-flex flex-wrap gap-2 mb-3">
+            <a class="btn btn-primary" href="{{ url_for('settings.backup') }}"><i class="bi bi-download me-2"></i>Download Backup</a>
+        </div>
+        <form method="post" action="{{ url_for('settings.restore') }}" enctype="multipart/form-data" class="row g-2">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <div class="col-md-8"><input type="file" class="form-control" name="backup_file" accept=".sql" required></div>
+            <div class="col-md-4"><button class="btn btn-outline-primary w-100" type="submit"><i class="bi bi-upload me-2"></i>Restore</button></div>
+        </form>
+    </article>
+
+    <article class="panel-card">
+        <div class="panel-header"><div><h2>Audit Log</h2><p>Login activity, purchases, sales, and user actions</p></div></div>
+        <div class="table-responsive">
+            <table class="table align-middle admin-table">
+                <thead><tr><th>Action</th><th>User</th><th>Entity</th><th>Date</th></tr></thead>
+                <tbody>
+                    {% for log in audit_logs %}
+                        <tr><td>{{ log.action }}<small class="d-block text-muted">{{ log.description or '' }}</small></td><td>{{ log.username or '-' }}</td><td>{{ log.entity_type or '-' }} {{ log.entity_id or '' }}</td><td>{{ log.created_at.strftime('%d %b %Y, %I:%M %p') if log.created_at else '-' }}</td></tr>
+                    {% else %}
+                        <tr><td colspan="4" class="empty-state">No audit activity recorded yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </article>
+</section>
+{% endblock %}

@@ -1,0 +1,237 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}Dashboard | Medical Store Management{% endblock %}
+{% block page_heading %}Dashboard{% endblock %}
+
+{% block content %}
+<section class="dashboard-hero">
+    <div>
+        <p class="section-kicker">Live overview</p>
+        <h1>Welcome, {{ current_user.username }}</h1>
+        <p>Monitor medicines, inventory health, supplier activity, and sales performance from one clean control center.</p>
+    </div>
+    <div class="hero-pill">
+        <i class="bi bi-shield-check"></i>
+        <span>{{ current_user.display_role }} Access</span>
+    </div>
+</section>
+
+<section class="dashboard-top-grid">
+    <article class="panel-card alerts-panel">
+        <div class="panel-header">
+            <div>
+                <h2>Alerts</h2>
+                <p>Inventory notifications that need attention</p>
+            </div>
+        </div>
+        <div class="alert-list">
+            {% for alert in alerts %}
+                <a href="{{ alert.url }}" class="alert-item {{ alert.level }}">
+                    <i class="bi {{ alert.icon }}"></i>
+                    <span>{{ alert.message }}</span>
+                    <i class="bi bi-chevron-right ms-auto"></i>
+                </a>
+            {% endfor %}
+        </div>
+    </article>
+
+    <article class="panel-card health-panel">
+        <div class="panel-header">
+            <div>
+                <h2>Inventory Health</h2>
+                <p>Stock level distribution across active medicines</p>
+            </div>
+        </div>
+        <div class="health-metrics">
+            <div>
+                <div class="progress-label"><span>Healthy Stock</span><strong>{{ inventory_health.healthy }}%</strong></div>
+                <div class="progress"><div class="progress-bar bg-success" style="width: {{ inventory_health.healthy }}%"></div></div>
+            </div>
+            <div>
+                <div class="progress-label"><span>Warning Stock</span><strong>{{ inventory_health.low }}%</strong></div>
+                <div class="progress"><div class="progress-bar bg-warning" style="width: {{ inventory_health.low }}%"></div></div>
+            </div>
+            <div>
+                <div class="progress-label"><span>Critical Stock</span><strong>{{ inventory_health.critical }}%</strong></div>
+                <div class="progress"><div class="progress-bar bg-danger" style="width: {{ inventory_health.critical }}%"></div></div>
+            </div>
+        </div>
+    </article>
+</section>
+
+<section class="stats-grid" aria-label="Dashboard statistics">
+    {% for item in stats %}
+        <a class="stat-card clickable-card accent-{{ item.accent }}" href="{{ item.url }}">
+            <div class="stat-icon">
+                <i class="bi {{ item.icon }}"></i>
+            </div>
+            <div>
+                <span>{{ item.label }}</span>
+                <strong>{{ item.value }}</strong>
+                <small>{{ item.note }}</small>
+            </div>
+        </a>
+    {% endfor %}
+</section>
+
+<section class="charts-grid">
+    <article class="panel-card chart-panel wide">
+        <div class="panel-header">
+            <div>
+                <h2>Daily Sales Trend</h2>
+                <p>Last 30 days revenue movement</p>
+            </div>
+        </div>
+        <div class="chart-wrap"><canvas id="dailySalesChart"></canvas></div>
+    </article>
+
+    <article class="panel-card chart-panel">
+        <div class="panel-header">
+            <div>
+                <h2>Monthly Revenue</h2>
+                <p>Revenue by month</p>
+            </div>
+        </div>
+        <div class="chart-wrap"><canvas id="monthlyRevenueChart"></canvas></div>
+    </article>
+
+    <article class="panel-card chart-panel">
+        <div class="panel-header">
+            <div>
+                <h2>Medicine Categories</h2>
+                <p>Catalog distribution</p>
+            </div>
+        </div>
+        <div class="chart-wrap doughnut-wrap"><canvas id="categoryChart"></canvas></div>
+    </article>
+</section>
+
+<section class="tables-grid">
+    <article class="panel-card">
+        <div class="panel-header">
+            <div>
+                <h2>Recent Sales</h2>
+                <p>Latest completed transactions</p>
+            </div>
+            <a href="{{ url_for('sales.index') }}" class="btn btn-sm btn-outline-primary">View Sales</a>
+        </div>
+        <div class="table-responsive">
+            <table class="table align-middle admin-table">
+                <thead>
+                    <tr>
+                        <th>Sale ID</th>
+                        <th>Date</th>
+                        <th>Employee</th>
+                        <th class="text-end">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sale in recent_sales %}
+                        <tr>
+                            <td>#{{ sale.sale_id }}</td>
+                            <td>{{ sale.sale_date.strftime('%d %b %Y, %I:%M %p') if sale.sale_date else '-' }}</td>
+                            <td>{{ sale.employee }}</td>
+                            <td class="text-end">Rs {{ "{:,.2f}".format(sale.total_amount or 0) }}</td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="4" class="empty-state">No sales recorded yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </article>
+
+    <article class="panel-card">
+        <div class="panel-header">
+            <div>
+                <h2>Recent Purchases</h2>
+                <p>Newest supplier purchases</p>
+            </div>
+            {% if current_user.is_admin %}
+                <a href="{{ url_for('purchases.index') }}" class="btn btn-sm btn-outline-primary">View Purchases</a>
+            {% endif %}
+        </div>
+        <div class="table-responsive">
+            <table class="table align-middle admin-table">
+                <thead>
+                    <tr>
+                        <th>Purchase ID</th>
+                        <th>Supplier</th>
+                        <th>Date</th>
+                        <th class="text-end">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for purchase in recent_purchases %}
+                        <tr>
+                            <td>#{{ purchase.purchase_id }}</td>
+                            <td>{{ purchase.supplier }}</td>
+                            <td>{{ purchase.purchase_date.strftime('%d %b %Y') if purchase.purchase_date else '-' }}</td>
+                            <td class="text-end">Rs {{ "{:,.2f}".format(purchase.total_amount or 0) }}</td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="4" class="empty-state">No purchases recorded yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </article>
+</section>
+
+<section class="panel-card mb-3">
+    <div class="panel-header">
+        <div>
+            <h2>Top Suppliers</h2>
+            <p>Suppliers ranked by purchase value</p>
+        </div>
+        {% if current_user.is_admin %}
+            <a href="{{ url_for('suppliers.index') }}" class="btn btn-sm btn-outline-primary">View Suppliers</a>
+        {% endif %}
+    </div>
+    <div class="table-responsive">
+        <table class="table align-middle admin-table">
+            <thead>
+                <tr>
+                    <th>Supplier</th>
+                    <th>Purchases</th>
+                    <th class="text-end">Total Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for supplier in top_suppliers %}
+                    <tr>
+                        <td><a class="table-link" href="{{ url_for('suppliers.detail', supplier_id=supplier.supplier_id) }}">{{ supplier.supplier_name }}</a></td>
+                        <td>{{ supplier.purchase_count }}</td>
+                        <td class="text-end">Rs {{ "{:,.2f}".format(supplier.purchase_total or 0) }}</td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="3" class="empty-state">No supplier purchase data yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="panel-card quick-actions">
+    <div class="panel-header">
+        <div>
+            <h2>Quick Actions</h2>
+            <p>Start common pharmacy workflows</p>
+        </div>
+    </div>
+    <div class="quick-action-grid">
+        {% if current_user.is_admin %}
+            <a href="{{ url_for('medicines.add') }}" class="quick-action"><i class="bi bi-plus-circle"></i><span>Add Medicine</span></a>
+            <a href="{{ url_for('purchases.create') }}" class="quick-action"><i class="bi bi-bag-plus"></i><span>Create Purchase</span></a>
+            <a href="{{ url_for('suppliers.add') }}" class="quick-action"><i class="bi bi-person-plus"></i><span>Add Supplier</span></a>
+        {% endif %}
+        <a href="{{ url_for('sales.create') }}" class="quick-action"><i class="bi bi-receipt-cutoff"></i><span>Create Sale</span></a>
+    </div>
+</section>
+
+<script id="dashboard-data" type="application/json">{{ chart_data|tojson }}</script>
+{% endblock %}
+
+{% block app_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{% endblock %}

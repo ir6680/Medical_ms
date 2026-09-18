@@ -1,0 +1,86 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}POS | Medical Store Management{% endblock %}
+{% block page_heading %}POS{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div>
+        <p class="section-kicker">Cashier Panel</p>
+        <h1>Point of Sale</h1>
+        <p>Search available non-expired stock, build a cart, and complete counter sales.</p>
+    </div>
+    <a href="{{ url_for('pos.history') }}" class="btn btn-outline-primary"><i class="bi bi-clock-history me-2"></i>My Sales</a>
+</section>
+
+<section class="stats-grid inventory-stats">
+    <article class="stat-card accent-teal"><div class="stat-icon"><i class="bi bi-cash-coin"></i></div><div><span>Today's Sales</span><strong>Rs {{ "{:,.2f}".format(summary.sales_amount or 0) }}</strong><small>{{ current_user.display_name }}</small></div></article>
+    <article class="stat-card accent-primary"><div class="stat-icon"><i class="bi bi-receipt"></i></div><div><span>Invoice Count</span><strong>{{ summary.invoice_count or 0 }}</strong><small>Today</small></div></article>
+    <article class="stat-card accent-info"><div class="stat-icon"><i class="bi bi-cart3"></i></div><div><span>Current Cart</span><strong id="posCartCount">0</strong><small>Items selected</small></div></article>
+</section>
+
+<section class="detail-grid">
+    <article class="panel-card">
+        <div class="panel-header"><div><h2>Medicine Search</h2><p>Name, generic name, or barcode</p></div></div>
+        <div class="input-group mb-3">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input type="search" class="form-control" id="posSearch" placeholder="Search medicine, generic, barcode" data-search-url="{{ url_for('pos.search') }}" autocomplete="off">
+        </div>
+        <div class="table-responsive">
+            <table class="table align-middle admin-table">
+                <thead><tr><th>Medicine</th><th>Stock</th><th>Price</th><th>Batch</th><th class="text-end">Action</th></tr></thead>
+                <tbody id="posSearchResults">
+                    <tr><td colspan="5" class="empty-state">Search to add medicines into cart.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </article>
+
+    <article class="panel-card">
+        <div class="panel-header"><div><h2>Checkout</h2><p>Customer and payment details</p></div></div>
+        <form method="post" action="{{ url_for('pos.checkout') }}" id="posForm" novalidate>
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <div id="posHiddenItems"></div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label" for="customer_name">Customer Name</label>
+                    <input class="form-control" id="customer_name" name="customer_name">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="customer_phone">Customer Phone</label>
+                    <input class="form-control" id="customer_phone" name="customer_phone">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="discount">Discount</label>
+                    <input type="number" min="0" step="0.01" class="form-control pos-money" id="discount" name="discount" value="0">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="cash_received">Cash Received</label>
+                    <input type="number" min="0" step="0.01" class="form-control pos-money" id="cash_received" name="cash_received" value="0" required>
+                </div>
+            </div>
+            <dl class="info-list mt-3">
+                <div><dt>Running Total</dt><dd id="posRunningTotal">Rs 0.00</dd></div>
+                <div><dt>Grand Total</dt><dd id="posGrandTotal">Rs 0.00</dd></div>
+                <div><dt>Change Return</dt><dd id="posChange">Rs 0.00</dd></div>
+            </dl>
+            <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check2-circle me-2"></i>Complete Sale</button>
+            </div>
+        </form>
+    </article>
+</section>
+
+<section class="panel-card">
+    <div class="panel-header"><div><h2>Current Cart</h2><p>Quantity, unit price, and subtotal</p></div></div>
+    <div class="table-responsive">
+        <table class="table align-middle admin-table">
+            <thead><tr><th>Medicine</th><th>Quantity</th><th>Unit Price</th><th class="text-end">Subtotal</th><th class="text-end">Actions</th></tr></thead>
+            <tbody id="posCartRows">
+                <tr><td colspan="5" class="empty-state">No medicines added.</td></tr>
+            </tbody>
+            <tfoot><tr><th colspan="3" class="text-end">Total</th><th class="text-end" id="posCartTotal">Rs 0.00</th><th></th></tr></tfoot>
+        </table>
+    </div>
+</section>
+{% endblock %}

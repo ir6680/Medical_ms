@@ -1,0 +1,50 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}Expired Disposals | Medical Store Management{% endblock %}
+{% block page_heading %}Expired Disposals{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div><p class="section-kicker">Inventory</p><h1>Expired Medicine Disposal</h1><p>Dispose expired stock while preserving a permanent history.</p></div>
+    <div class="page-actions"><a href="{{ url_for('inventory.expiring') }}" class="btn btn-outline-primary"><i class="bi bi-calendar2-x me-2"></i>Expiry View</a><a href="{{ url_for('inventory.adjustments') }}" class="btn btn-outline-primary"><i class="bi bi-sliders me-2"></i>Adjustments</a></div>
+</section>
+
+<section class="panel-card form-panel">
+    <form method="post" class="row g-3">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+        <div class="col-md-7">
+            <label class="form-label" for="inventory_id">Expired Batch</label>
+            <select class="form-select" id="inventory_id" name="inventory_id" required>
+                <option value="">Select expired batch</option>
+                {% for batch in expired_batches %}
+                    <option value="{{ batch.inventory_id }}">{{ batch.medicine_name }} - {{ batch.batch_no }} (Stock {{ batch.quantity }}, Exp {{ batch.expiry_date.strftime('%d %b %Y') }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-5"><label class="form-label" for="quantity">Dispose Quantity</label><input type="number" min="1" class="form-control" id="quantity" name="quantity" required></div>
+        <div class="col-12"><label class="form-label" for="reason">Disposal Reason</label><textarea class="form-control" id="reason" name="reason" rows="2"></textarea></div>
+        <div class="col-12 d-flex justify-content-end"><button class="btn btn-primary" type="submit"><i class="bi bi-trash3 me-2"></i>Record Disposal</button></div>
+    </form>
+</section>
+
+<section class="panel-card mt-3">
+    <div class="panel-header"><div><h2>Disposal History</h2><p>Expired stock removals</p></div></div>
+    <div class="table-responsive">
+        <table class="table align-middle admin-table data-table">
+            <thead><tr><th>Date</th><th>Medicine</th><th>Batch</th><th>Quantity</th><th>User</th><th>Reason</th></tr></thead>
+            <tbody>
+                {% for row in history %}
+                    <tr><td>{{ row.created_at.strftime('%d %b %Y, %I:%M %p') if row.created_at else '-' }}</td><td>{{ row.medicine_name }}</td><td>{{ row.batch_no }}</td><td>{{ row.quantity }}</td><td>{{ row.username }}</td><td>{{ row.reason or '-' }}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
+
+{% block app_scripts %}
+<link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.bootstrap5.css">
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/2.0.8/js/dataTables.js"></script>
+<script src="https://cdn.datatables.net/2.0.8/js/dataTables.bootstrap5.js"></script>
+{% endblock %}

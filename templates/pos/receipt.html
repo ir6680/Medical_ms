@@ -1,0 +1,72 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}Receipt #{{ sale.sale_id }} | Medical Store Management{% endblock %}
+{% block page_heading %}Receipt{% endblock %}
+
+{% block head %}
+<style>
+@media print {
+    .sidebar, .topbar, .page-header, .dashboard-flashes { display: none !important; }
+    .main-panel, .content-area { margin: 0 !important; padding: 0 !important; }
+    .panel-card { box-shadow: none !important; border: 0 !important; }
+    .thermal-receipt { max-width: 80mm !important; font-size: 12px; }
+}
+.thermal-receipt { max-width: 420px; margin: 0 auto; }
+.receipt-title { text-align: center; margin-bottom: 1rem; }
+{% if receipt_type == 'a4' %}
+.thermal-receipt { max-width: 900px; }
+{% endif %}
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div>
+        <p class="section-kicker">Sale Receipt</p>
+        <h1>Invoice #{{ sale.sale_id }}</h1>
+        <p>{{ sale.sale_date.strftime('%d %b %Y, %I:%M %p') if sale.sale_date else '-' }}</p>
+    </div>
+    <div class="page-actions">
+        <a href="{{ url_for('pos.receipt', sale_id=sale.sale_id, type='thermal') }}" class="btn btn-outline-primary"><i class="bi bi-receipt me-2"></i>Thermal</a>
+        <a href="{{ url_for('pos.receipt', sale_id=sale.sale_id, type='a4') }}" class="btn btn-outline-primary"><i class="bi bi-file-earmark-text me-2"></i>A4</a>
+        <button class="btn btn-primary" type="button" onclick="window.print()"><i class="bi bi-printer me-2"></i>Print</button>
+    </div>
+</section>
+
+<section class="panel-card thermal-receipt">
+    <div class="receipt-title">
+        <h2>MedStore</h2>
+        <p class="text-muted mb-0">Sale Receipt</p>
+    </div>
+    <dl class="info-list">
+        <div><dt>Invoice</dt><dd>#{{ sale.sale_id }}</dd></div>
+        <div><dt>Employee</dt><dd>{{ sale.employee }}</dd></div>
+        <div><dt>Date</dt><dd>{{ sale.sale_date.strftime('%d %b %Y, %I:%M %p') if sale.sale_date else '-' }}</dd></div>
+        <div><dt>Customer</dt><dd>{{ sale.customer_name or 'Walk-in Customer' }}</dd></div>
+        <div><dt>Phone</dt><dd>{{ sale.customer_phone or '-' }}</dd></div>
+    </dl>
+    <div class="table-responsive">
+        <table class="table align-middle admin-table">
+            <thead><tr><th>Medicine</th><th>Qty</th><th>Price</th><th class="text-end">Subtotal</th></tr></thead>
+            <tbody>
+                {% for item in items %}
+                    <tr>
+                        <td>{{ item.medicine_name }}<small class="d-block text-muted">{{ item.generic_name }}</small></td>
+                        <td>{{ item.quantity }}</td>
+                        <td>Rs {{ "{:,.2f}".format(item.unit_price or 0) }}</td>
+                        <td class="text-end">Rs {{ "{:,.2f}".format(item.subtotal or 0) }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% set gross_total = items|sum(attribute='subtotal') %}
+    <dl class="info-list mt-3">
+        <div><dt>Subtotal</dt><dd>Rs {{ "{:,.2f}".format(gross_total or 0) }}</dd></div>
+        <div><dt>Discount</dt><dd>Rs {{ "{:,.2f}".format(sale.discount or 0) }}</dd></div>
+        <div><dt>Grand Total</dt><dd>Rs {{ "{:,.2f}".format(sale.total_amount or 0) }}</dd></div>
+        <div><dt>Cash Received</dt><dd>Rs {{ "{:,.2f}".format(sale.cash_received or 0) }}</dd></div>
+        <div><dt>Change Return</dt><dd>Rs {{ "{:,.2f}".format(sale.change_return or 0) }}</dd></div>
+    </dl>
+</section>
+{% endblock %}

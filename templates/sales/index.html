@@ -1,0 +1,55 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}Sales | Medical Store Management{% endblock %}
+{% block page_heading %}Sales{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div>
+        <p class="section-kicker">Sale Invoices</p>
+        <h1>Sales History</h1>
+        <p>Search, sort, and review completed medicine sale invoices.</p>
+    </div>
+    <a href="{{ url_for('sales.create') }}" class="btn btn-primary"><i class="bi bi-plus-circle me-2"></i>Create Sale</a>
+</section>
+
+<section class="panel-card">
+    <div class="table-responsive">
+        <table id="salesTable" class="table align-middle admin-table data-table">
+            <thead>
+                <tr>
+                    <th>Sale ID</th>
+                    <th>Employee</th>
+                    <th>Date</th>
+                    <th>Items</th>
+                    <th class="text-end">Total Amount</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sale in sales %}
+                    <tr>
+                        <td><a class="table-link" href="{{ url_for('sales.detail', sale_id=sale.sale_id) }}">#{{ sale.sale_id }}</a></td>
+                        <td>{{ sale.employee }}</td>
+                        <td>{{ sale.sale_date.strftime('%d %b %Y, %I:%M %p') if sale.sale_date else '-' }}</td>
+                        <td>{{ sale.item_count }}</td>
+                        <td class="text-end">Rs {{ "{:,.2f}".format(sale.total_amount or 0) }}</td>
+                        <td class="text-end">
+                            <div class="action-buttons">
+                                <a class="btn btn-sm icon-btn table-icon" href="{{ url_for('sales.detail', sale_id=sale.sale_id) }}" title="View"><i class="bi bi-eye"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
+
+{% block app_scripts %}
+<link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.bootstrap5.css">
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/2.0.8/js/dataTables.js"></script>
+<script src="https://cdn.datatables.net/2.0.8/js/dataTables.bootstrap5.js"></script>
+{% endblock %}

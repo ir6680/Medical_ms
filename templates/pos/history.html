@@ -1,0 +1,46 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}My Sales | Medical Store Management{% endblock %}
+{% block page_heading %}My Sales{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div>
+        <p class="section-kicker">Cashier Panel</p>
+        <h1>My Sales History</h1>
+        <p>Review and print receipts for invoices completed by your account.</p>
+    </div>
+    <a href="{{ url_for('pos.index') }}" class="btn btn-primary"><i class="bi bi-calculator me-2"></i>POS</a>
+</section>
+
+<section class="panel-card">
+    <div class="table-responsive">
+        <table class="table align-middle admin-table data-table">
+            <thead><tr><th>Invoice</th><th>Date</th><th>Items</th><th class="text-end">Amount</th><th class="text-end">Actions</th></tr></thead>
+            <tbody>
+                {% for sale in sales %}
+                    <tr>
+                        <td><a class="table-link" href="{{ url_for('pos.receipt', sale_id=sale.sale_id) }}">#{{ sale.sale_id }}</a></td>
+                        <td>{{ sale.sale_date.strftime('%d %b %Y, %I:%M %p') if sale.sale_date else '-' }}</td>
+                        <td>{{ sale.item_count }}</td>
+                        <td class="text-end">Rs {{ "{:,.2f}".format(sale.total_amount or 0) }}</td>
+                        <td class="text-end">
+                            <div class="action-buttons">
+                                <a class="btn btn-sm icon-btn table-icon" href="{{ url_for('pos.receipt', sale_id=sale.sale_id) }}" title="Thermal Receipt"><i class="bi bi-receipt"></i></a>
+                                <a class="btn btn-sm icon-btn table-icon" href="{{ url_for('pos.receipt', sale_id=sale.sale_id, type='a4') }}" title="A4 Invoice"><i class="bi bi-file-earmark-text"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
+
+{% block app_scripts %}
+<link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.bootstrap5.css">
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/2.0.8/js/dataTables.js"></script>
+<script src="https://cdn.datatables.net/2.0.8/js/dataTables.bootstrap5.js"></script>
+{% endblock %}

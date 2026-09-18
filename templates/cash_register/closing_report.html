@@ -1,0 +1,30 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}Daily Closing Report | Medical Store Management{% endblock %}
+{% block page_heading %}Closing Report{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div><p class="section-kicker">Daily Closing</p><h1>Closing Report</h1><p>{{ register_date.strftime('%d %b %Y') }}</p></div>
+    <div class="page-actions"><a href="{{ url_for('cash_register.index', date=register_date) }}" class="btn btn-outline-primary"><i class="bi bi-arrow-left me-2"></i>Cash Register</a><button class="btn btn-primary" type="button" onclick="window.print()"><i class="bi bi-printer me-2"></i>Print</button></div>
+</section>
+
+<section class="stats-grid inventory-stats">
+    <article class="stat-card accent-teal"><div class="stat-icon"><i class="bi bi-cash-coin"></i></div><div><span>Total Sales</span><strong>Rs {{ "{:,.2f}".format(summary.total_sales or 0) }}</strong><small>Sale revenue</small></div></article>
+    <article class="stat-card accent-info"><div class="stat-icon"><i class="bi bi-bag-check"></i></div><div><span>Total Purchases</span><strong>Rs {{ "{:,.2f}".format(summary.total_purchases or 0) }}</strong><small>Purchase spend</small></div></article>
+    <article class="stat-card accent-warning"><div class="stat-icon"><i class="bi bi-arrow-counterclockwise"></i></div><div><span>Total Returns</span><strong>Rs {{ "{:,.2f}".format(summary.total_returns or 0) }}</strong><small>Sale + purchase returns</small></div></article>
+    <article class="stat-card accent-danger"><div class="stat-icon"><i class="bi bi-wallet2"></i></div><div><span>Total Expenses</span><strong>Rs {{ "{:,.2f}".format(summary.expenses or 0) }}</strong><small>Daily expenses</small></div></article>
+    <article class="stat-card accent-success"><div class="stat-icon"><i class="bi bi-graph-up"></i></div><div><span>Net Profit</span><strong>Rs {{ "{:,.2f}".format(summary.net_profit or 0) }}</strong><small>Estimated daily net</small></div></article>
+</section>
+
+<section class="panel-card">
+    <div class="panel-header"><div><h2>Cash Details</h2><p>Register values for the selected date</p></div></div>
+    <dl class="info-list">
+        <div><dt>Opening Cash</dt><dd>Rs {{ "{:,.2f}".format(register.opening_cash if register else 0) }}</dd></div>
+        <div><dt>Closing Cash</dt><dd>Rs {{ "{:,.2f}".format(register.closing_cash if register else 0) }}</dd></div>
+        <div><dt>Gross Profit</dt><dd>Rs {{ "{:,.2f}".format(summary.gross_profit or 0) }}</dd></div>
+        <div><dt>Net Profit</dt><dd>Rs {{ "{:,.2f}".format(summary.net_profit or 0) }}</dd></div>
+        <div><dt>Notes</dt><dd>{{ register.notes if register and register.notes else '-' }}</dd></div>
+    </dl>
+</section>
+{% endblock %}

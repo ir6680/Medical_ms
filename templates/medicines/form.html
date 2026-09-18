@@ -1,0 +1,46 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}{{ mode }} Medicine | Medical Store Management{% endblock %}
+{% block page_heading %}{{ mode }} Medicine{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div>
+        <p class="section-kicker">Catalog</p>
+        <h1>{{ mode }} Medicine</h1>
+        <p>Keep medicine master data clean for sales, purchases, and inventory controls.</p>
+    </div>
+    <a href="{{ url_for('medicines.index') }}" class="btn btn-outline-primary"><i class="bi bi-arrow-left me-2"></i>Back</a>
+</section>
+
+<section class="panel-card form-panel">
+    <form method="post" class="row g-3" novalidate>
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+        <div class="col-md-6">
+            <label class="form-label" for="medicine_name">Medicine Name</label>
+            <input class="form-control" id="medicine_name" name="medicine_name" value="{{ medicine.medicine_name or '' }}" required>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="generic_name">Generic Name</label>
+            <input class="form-control" id="generic_name" name="generic_name" value="{{ medicine.generic_name or '' }}" required>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="company">Company</label>
+            <input class="form-control" id="company" name="company" value="{{ medicine.company or '' }}" required>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="category">Category</label>
+            <input class="form-control" id="category" name="category" value="{{ medicine.category or '' }}" required>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="barcode">Barcode</label>
+            <input class="form-control" id="barcode" name="barcode" value="{{ medicine.barcode or '' }}" required>
+        </div>
+        <div class="col-12 d-flex justify-content-end gap-2">
+            <a href="{{ url_for('medicines.index') }}" class="btn btn-light">Cancel</a>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check2-circle me-2"></i>Save Medicine</button>
+        </div>
+    </form>
+</section>
+{% endblock %}

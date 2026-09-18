@@ -1,0 +1,70 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}Inventory | Medical Store Management{% endblock %}
+{% block page_heading %}Inventory{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div>
+        <p class="section-kicker">Inventory</p>
+        <h1>Inventory Management</h1>
+        <p>Track batches, prices, quantity, expiry dates, and stock health.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{{ url_for('inventory.low_stock') }}" class="btn btn-outline-primary"><i class="bi bi-exclamation-triangle me-2"></i>Low Stock</a>
+        <a href="{{ url_for('inventory.expiring') }}" class="btn btn-outline-primary"><i class="bi bi-calendar2-x me-2"></i>Expiring</a>
+        <a href="{{ url_for('inventory.adjustments') }}" class="btn btn-outline-primary"><i class="bi bi-sliders me-2"></i>Adjustments</a>
+        <a href="{{ url_for('inventory.disposals') }}" class="btn btn-outline-primary"><i class="bi bi-trash3 me-2"></i>Disposals</a>
+        <a href="{{ url_for('inventory.add') }}" class="btn btn-primary"><i class="bi bi-plus-circle me-2"></i>Add Inventory</a>
+    </div>
+</section>
+
+<section class="stats-grid inventory-stats">
+    {% for item in analytics %}
+        <article class="stat-card accent-{{ item.accent }}">
+            <div class="stat-icon"><i class="bi {{ item.icon }}"></i></div>
+            <div><span>{{ item.label }}</span><strong>{{ item.value }}</strong><small>Inventory analytics</small></div>
+        </article>
+    {% endfor %}
+</section>
+
+<section class="panel-card">
+    <div class="table-responsive">
+        <table id="inventoryTable" class="table align-middle admin-table data-table">
+            <thead>
+                <tr>
+                    <th>Medicine</th>
+                    <th>Batch Number</th>
+                    <th>Purchase Price</th>
+                    <th>Sale Price</th>
+                    <th>Quantity</th>
+                    <th>Expiry Date</th>
+                    <th>Stock Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in inventory_items %}
+                    {% set status = 'Healthy' if item.quantity > 20 else ('Warning' if item.quantity >= 10 else 'Critical') %}
+                    {% set badge = 'success' if item.quantity > 20 else ('warning' if item.quantity >= 10 else 'danger') %}
+                    <tr>
+                        <td><a class="table-link" href="{{ url_for('medicines.detail', medicine_id=item.medicine_id) }}">{{ item.medicine_name }}</a><small class="d-block text-muted">{{ item.generic_name }}</small></td>
+                        <td>{{ item.batch_no }}</td>
+                        <td>Rs {{ "{:,.2f}".format(item.purchase_price or 0) }}</td>
+                        <td>Rs {{ "{:,.2f}".format(item.sale_price or 0) }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>{{ item.expiry_date.strftime('%d %b %Y') if item.expiry_date else '-' }}</td>
+                        <td><span class="badge text-bg-{{ badge }}">{{ status }}</span></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
+
+{% block app_scripts %}
+<link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.bootstrap5.css">
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/2.0.8/js/dataTables.js"></script>
+<script src="https://cdn.datatables.net/2.0.8/js/dataTables.bootstrap5.js"></script>
+{% endblock %}
