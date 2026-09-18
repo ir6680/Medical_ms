@@ -259,7 +259,4 @@ Forms must include:
 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
 ```
 
-## Security Reminder
 
-Do not keep real database passwords, production secrets, or private backups inside the repository. Move sensitive values out of `config.py` before deployment.
-<img width="1852" height="600" alt="image" src="https://github.com/user-attachments/assets/4da871e7-989c-4197-9c47-395dd5226d48" />
